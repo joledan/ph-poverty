@@ -11,7 +11,8 @@ packages <- c("sf","readr","tidyr","dplyr","ggplot2",
               "sysfonts","extrafont", "readxl", "cowplot",
               "patchwork", "Cairo", "lubridate", "ragg",
               "camcorder", "devtools", "geodata", "reticulate",
-              "tidyterra", "janitor", "rnaturalearth", "cartogram")
+              "tidyterra", "janitor", "rnaturalearth", "cartogram",
+              "ggtext")
 extrafont::loadfonts("win")
 # install packages not yet installed
 install_package <- packages %in% rownames(installed.packages())
@@ -89,7 +90,7 @@ df_pov <- paste(dataraw,
   mutate(across(c(annual_pc_threshold_2015:poverty_incidence_2021), ~ as.numeric(.)),
          incidence_pctpoint_2018_2021 = poverty_incidence_2021-poverty_incidence_2018,
          incidence_pctpoint_2015_2021 = poverty_incidence_2021-poverty_incidence_2015,
-         ) %>%
+  ) %>%
   filter(!is.na(annual_pc_threshold_2015)) %>%
   mutate(region_dummy = if_else(str_detect(geolocation, "Region|region|PHILIPPINES"), 1, 0),
          province_dummy = if_else(region_dummy == 0, 1, 0),
@@ -176,23 +177,23 @@ df_pov_ph <- ph %>%
     incidence_pctpoint_2015_2021 > 0 & incidence_pctpoint_2015_2021 <= 10 ~ "10",
     incidence_pctpoint_2015_2021 > 10 ~ "20"
   ))
-  
+
 summary(df_pov_ph$incidence_pctpoint_2018_2021)
 summary(df_pov_ph$incidence_pctpoint_2015_2021)
 
 
 # plotting normalized index for 2019
 # camcorder to set up and output plots
-camcorder::gg_record(
-  dir = plots,
-  device = "png",
-  scale = 2,
-  width = 2,
-  height = 3,
-  units = "in",
-  dpi = 300,
-  bg = "white"
-)
+# camcorder::gg_record(
+#   dir = plots,
+#   device = "png",
+#   scale = 2,
+#   width = 2,
+#   height = 3,
+#   units = "in",
+#   dpi = 300,
+#   bg = "white"
+# )
 
 
 col <- c("#053061", "#2166ac", "#4393c3", "#92c5de", "#d1e5f0", "#fddbc7", "#f4a582", "#d6604d")
@@ -295,7 +296,8 @@ f2pa <- ggplot(data = df_island_group) +
   scale_fill_manual(values = highlights) +
   coord_sf(datum = NA,
            xlim = c(-200000, 1000000),
-           ylim = c(600000, 2300000)) + # adjust size of plot?
+           ylim = c(600000, 2300000),
+           expand = F) + # adjust size of plot?
   theme(plot.title = element_text(face="bold",
                                   size=12,
                                   margin=margin(t=10, r=0, b=3, l=10, "pt")),
@@ -333,10 +335,10 @@ df_pov_f2 <- paste(dataraw,
 
 
 highlights_line <- c("Luzon*"="#56B4E9",
-                "NCR" = "#E69F00",
-                "Visayas" = "#009E73",
-                "Mindanao" = "#CC79A7",
-                "Philippines" = "#999999")
+                     "NCR" = "#E69F00",
+                     "Visayas" = "#009E73",
+                     "Mindanao" = "#CC79A7",
+                     "Philippines" = "#999999")
 
 # line plot - overtime, major island groups, geography
 f2pb <- ggplot(data = df_pov_f2) +
@@ -363,18 +365,45 @@ f2pb <- ggplot(data = df_pov_f2) +
         panel.grid.minor.x = element_blank(), # remove minor x lines
         panel.grid.minor.y = element_blank(),
         plot.margin = margin(0, 10, 0, 10),
-        legend.position = "none") +
+        legend.position = "none",
+        axis.text.x = element_text(size=8),
+        axis.text.y = element_text(size=8)) +
   annotate(geom = "text", 
            x = c(2015.75, 2016, 2015.8, 2015.55, 2015.38), 
-           y = c(35, 29, 19.5, 15, 4.6), 
+           y = c(35, 29, 19.5, 15, 5), 
            label = c("Mindanao", "Visayas", "Philippines", "Luzon*", "NCR"),
            colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
            family = "Noto Sans",
-           fontface = "bold")
+           fontface = "bold",
+           size = 8/3)
 
 
 f2 <- f2pa + f2pb +
-  plot_layout(widths = c(1, 1),
-                heights = c(3, 2))
-f2
+  plot_annotation(
+    title = "Philippines",
+    subtitle = "Average poverty rate by major island group, 2015-2021 %",
+    caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source: ** Philippine Statistics Authority • **Visual: ** Jan Oledan") &
+  theme(text = element_text("Noto Sans"),
+        plot.title = element_text(face="bold",
+                                  size=12,
+                                  margin=margin(t=10, r=0, b=3, l=10, "pt")),
+        plot.subtitle = element_text(size=10,
+                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
+        plot.caption = element_markdown(hjust = 0,
+                                        size = 6,
+                                        color="grey",
+                                        margin=margin(t=0,r=0,b=0,l=0, "pt")))
+
+ggsave(
+  filename = "test1.png",
+  plot = f2,
+  device = "png",
+  path = plots,
+  scale = 1,
+  width = 6,
+  height = 3.5,
+  units = "in",
+  dpi = 300
+)
+
 
