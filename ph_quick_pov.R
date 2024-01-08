@@ -375,13 +375,35 @@ f2pb <- ggplot(data = df_pov_f2) +
         axis.text.x = element_text(size=8),
         axis.text.y = element_text(size=8)) +
   annotate(geom = "text", 
-           x = c(2015.75, 2016, 2015.8, 2015.55, 2015.38), 
-           y = c(35, 29, 19.5, 15, 5), 
+           x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
+           y = c(34.5, 29, 19, 14.5, 5), 
            label = c("Mindanao", "Visayas", "Philippines", "Luzon*", "NCR"),
            colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
            family = "Noto Sans",
            fontface = "bold",
-           size = 8/3)
+           size = 8/3) +
+  annotate(
+    "text",
+    x = 2020.8,
+    y = 37,
+    label = "Decreased\npoverty\nrate",
+    hjust = 1,
+    lineheight = .7,
+    family = "Noto Sans",
+    fontface = 'bold', 
+    size = 8/4,
+    colour = "grey"
+  ) +
+  annotate(
+    "segment",
+    x = 2020.9, # Play around with the coordinates until you're satisfied
+    y = 38.5,
+    yend = 33,
+    xend =  2020.9,
+    linewidth = .5,
+    arrow = arrow(length = unit(5, 'pt')),
+    colour = "grey"
+  )
 
 f2pb
 
@@ -392,8 +414,9 @@ f2pb
 #                            margin = margin(l = 100, r = 0))
 #https://stackoverflow.com/questions/55406829/ggplot-put-axis-text-inside-plot
 
-
+# need an arrow and  text 
 f2 <- f2pa + f2pb +
+  plot_layout(widths = c(3, 3.5)) +
   plot_annotation(
     title = "Philippines",
     subtitle = "Average poverty rate by major island group, 2015-2021 %",
@@ -409,7 +432,10 @@ f2 <- f2pa + f2pb +
                                         color="grey",
                                         margin=margin(t=0,r=0,b=0,l=0, "pt")))
 
+
 f2
+
+
 
 ggsave(
   filename = "test1.png",
