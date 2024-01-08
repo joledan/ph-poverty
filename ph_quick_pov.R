@@ -13,6 +13,7 @@ packages <- c("sf","readr","tidyr","dplyr","ggplot2",
               "camcorder", "devtools", "geodata", "reticulate",
               "tidyterra", "janitor", "rnaturalearth", "cartogram",
               "ggtext")
+
 extrafont::loadfonts("win")
 # install packages not yet installed
 install_package <- packages %in% rownames(installed.packages())
@@ -61,6 +62,9 @@ places <- ne_download(
   select(NAME, geometry) %>%
   mutate(shape = case_when(
     NAME == "Manila" ~ 18
+  ),
+  NAME = case_when(
+    NAME == "Manila" ~ "NCR"
   ))
 
 # read poverty incidence (%) and subsistence incidence files
@@ -203,7 +207,7 @@ f1 <- ggplot() +
   theme_minimal(base_family = "Noto Sans") +
   geom_sf(data = df_pov_ph, 
           aes(fill = qt),
-          color="#ABABAB",
+          color="#999999",
           linewidth = 0.1) +
   scale_fill_manual(values = col,
                     breaks = c("-40", "-30", "-20", "-10", "0", "10", "20"),
@@ -229,7 +233,7 @@ f1 <- ggplot() +
         plot.subtitle = element_text(size=10,
                                      margin=margin(t=0,r=0,b=0,l=0, "pt")),
         #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
-        plot.caption = element_text(hjust = 0,
+        plot.caption = element_markdown(hjust = 0,
                                     size = 6,
                                     color="grey",
                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
@@ -253,9 +257,7 @@ f1 <- ggplot() +
         legend.text = element_text(size = 8)) +  
   labs(title = "Poverty rates in the Philippines",
        subtitle = "Percentage point change, 2015-2021",
-       caption = bquote(paste(bold("Source:")~"Philippine Statistics Authority •",
-                              ~bold("By:")~"Jan Oledan",
-                              sep="\n"))) +
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
   annotate("text", 
            x = 590000, 
            y = 2450000, 
@@ -269,12 +271,10 @@ f1 <- ggplot() +
            family = "Noto Sans",
            size = 8/3)
 
-
 f1
 
-
 # okabe-ito
-z <- palette.colors(palette = "Okabe-Ito")
+palette.colors(palette = "Okabe-Ito")
 cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
            "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -287,12 +287,17 @@ df_island_group <- df_pov_ph %>%
   group_by(island_group) %>%
   summarise()
 
+# label NCR in yellow 
 # plot - geography
 f2pa <- ggplot(data = df_island_group) + 
   theme_minimal(base_family = "Noto Sans") +
   geom_sf(aes(fill = island_group),
           color="#FFFFFF",
           linewidth = 0.1) +
+  # geom_sf(data = places,
+  #         aes(fill = NAME),
+  #         color="#E69F00",
+  #         shape=18) +
   scale_fill_manual(values = highlights) +
   coord_sf(datum = NA,
            xlim = c(-200000, 1000000),
@@ -304,7 +309,7 @@ f2pa <- ggplot(data = df_island_group) +
         plot.subtitle = element_text(size=10,
                                      margin=margin(t=0,r=0,b=0,l=0, "pt")),
         #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
-        plot.caption = element_text(hjust = 0,
+        plot.caption = element_markdown(hjust = 0,
                                     size = 6,
                                     color="grey",
                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
@@ -314,6 +319,7 @@ f2pa <- ggplot(data = df_island_group) +
         axis.title = element_blank(),
         legend.position = "none") # specify colour scheme
 
+f2pa
 
 ##### by major island group
 df_pov_f2 <- paste(dataraw,
@@ -377,12 +383,21 @@ f2pb <- ggplot(data = df_pov_f2) +
            fontface = "bold",
            size = 8/3)
 
+f2pb
+
+# figure out how to get numbers above ticks in y-axis
+# axis.text.y = element_text(size=8,
+#                            hjust = 1,
+#                            vjust = 0,
+#                            margin = margin(l = 100, r = 0))
+#https://stackoverflow.com/questions/55406829/ggplot-put-axis-text-inside-plot
+
 
 f2 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
     subtitle = "Average poverty rate by major island group, 2015-2021 %",
-    caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source: ** Philippine Statistics Authority • **Visual: ** Jan Oledan") &
+    caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") &
   theme(text = element_text("Noto Sans"),
         plot.title = element_text(face="bold",
                                   size=12,
@@ -393,6 +408,8 @@ f2 <- f2pa + f2pb +
                                         size = 6,
                                         color="grey",
                                         margin=margin(t=0,r=0,b=0,l=0, "pt")))
+
+f2
 
 ggsave(
   filename = "test1.png",
