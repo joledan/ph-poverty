@@ -41,6 +41,10 @@ dataraw <- paste(main, "ph-quick/dataraw", sep = "/")
 plots <- paste(main, "ph-quick/plots", sep = "/")
 code <- paste(main, "ph-quick/code", sep = "/")
 
+`%notin%` <- Negate(`%in%`)
+
+
+##### read data #####
 # read admin1 ph data
 ph <- as_sf(gadm(country = "PHL",
                  level = 1,
@@ -449,4 +453,131 @@ ggsave(
   dpi = 300
 )
 
+##### get percentage of province that is urban #####
+df_urban_file <- paste(dataraw,
+                       "1_2020%20CPH_Urban%20Population_PR%20Statistical%20Tables_RML_063022_ONS%20%282%29.xlsx",
+                       sep = "/")
+df_urban <- read_excel(path = df_urban_file,
+                       sheet = "Table A",
+                       skip = 4) %>%
+  rename(province = "...1",
+         total_pop_2020 = "Total Population",
+         total_pop_2015 = "...3",
+         urban_pop_2020 = "Urban Population",
+         urban_pop_2015 = "...6",
+         pct_urban_2020 = "Percent Urban",
+         pct_urban_2015 = "...9") %>%
+  filter(!is.na(province), !is.na(total_pop_2020)) %>%
+  select(-c("...4", "...7")) %>%
+  mutate(province = case_when(
+    province == "PHILIPPINES 1, 2" ~ "PHILIPPINES", 
+    province == "CORDILLERAADMINISTRATIVEREGION(CAR)" ~ "CORDILLERA ADMINISTRATIVE REGION (CAR)",
+    province == "IN MUSLIM MINDANAO (BARMM)" ~ "Autonomous Region in Muslim Mindana Bangsamoro Autonomous Region in Muslim Mindanao (ARMM/BARMM)",
+    province == "Samar (Western Samar)" ~ "Samar",
+    province == "Davao de Oro (Compostela Valley)" ~ "Davao de Oro",
+    province == "Cotabato (North Cotabato)" ~ "North Cotabato",
+    province == "NATIONAL CAPITAL REGION (NCR)" ~ "Metropolitan Manila",
+    province == "Basilan (excluding City of Isabela)" ~ "Basilan",
+    province == "Maguindanao (including City of Cotabato)" ~ "Maguindanao",
+    T ~ province
+  )) %>%
+  mutate(across(c(total_pop_2020:pct_urban_2015), ~as.numeric(.)),
+         region = ifelse(str_detect(province, "Region|REGION|PHILIPPINES"), 1, 0)) %>%
+  filter(!str_detect(province, "City|Municipality"),
+         region == 0, 
+         province %notin% c("Interim Province", "Davao Occidental"))
 
+
+# get results from string matching
+urban_pop_string <- string_match(from = unique(df_urban$province),
+                                 to = unique(ph$NAME_1)) %>%
+  mutate(NAME_1 = ifelse(province=="Davao de Oro", "Davao de Oro", NAME_1))
+
+# join with string matched province names 
+df_urban1 <- df_urban %>%
+  left_join(urban_pop_string) %>%
+  select(-rank, -Similarity, -province) %>%
+  full_join(df_pov1, relationship = "many-to-many") %>%
+  relocate(NAME_1, province, island_group) %>%
+  filter(province %notin% c("1st District", "2nd District", "3rd District", "4th District")) %>%
+  mutate(province = ifelse(NAME_1 == "Metropolitan Manila", "Metropolitan Manila", province),
+         island_group = ifelse(island_group == "Luzon", "Luzon*", island_group))
+# isabela city, cotabato city are in the PH data, but not in shapefile data
+# drop from data
+
+##### plotting #####
+# want to see urban x poverty plotted
+highlights_line <- c("Luzon*"="#56B4E9",
+                     "NCR" = "#E69F00",
+                     "Visayas" = "#009E73",
+                     "Mindanao" = "#CC79A7",
+                     "Philippines" = "#999999")
+
+# line plot - overtime, major island groups, geography
+f3 <- ggplot(data = df_urban1) +
+  theme_minimal(base_family = "Noto Sans") +
+  geom_point(aes(x = pct_urban_2015, 
+                 y = poverty_incidence_2015,
+                 color = island_group, 
+                 group = island_group),
+            size = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = highlights_line) +
+  theme(panel.border = element_blank(),
+        axis.title.x = element_blank(), # adjust x axis title
+        axis.title.y = element_blank(), # adjust y axis title
+        axis.ticks.x = element_line(colour="black"),
+        axis.ticks.y = element_blank(), # remove y axis ticks
+        axis.line.x = element_line(), # adjust x axis line
+        #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
+        panel.grid.major.x = element_blank(), # remove major x lines
+        panel.grid.minor.x = element_blank(), # remove minor x lines
+        panel.grid.minor.y = element_blank(),
+        plot.margin = margin(0, 10, 0, 10),
+        #legend.position = "none",
+        axis.text.x = element_text(size=8),
+        axis.text.y = element_text(size=8)) +
+  scale_x_continuous(position = "top") + # move the x axis labels up top
+  scale_y_reverse(limits = c(80, 0))
+
+f3
+
+
++
+  scale_x_continuous(position = "bottom",   # move the x axis labels up top
+                     breaks = c(2015, 2018, 2021),
+                     limits = c(2015, 2021),
+                     expand = c(0,.01)) +
+
+  annotate(geom = "text", 
+           x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
+           y = c(34.5, 29, 19, 14.5, 5), 
+           label = c("Mindanao", "Visayas", "Philippines", "Luzon*", "NCR"),
+           colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
+           family = "Noto Sans",
+           fontface = "bold",
+           size = 8/3) +
+  annotate(
+    "text",
+    x = 2020.8,
+    y = 37,
+    label = "Decreased\npoverty\nrate",
+    hjust = 1,
+    lineheight = .7,
+    family = "Noto Sans",
+    fontface = 'bold', 
+    size = 8/4,
+    colour = "grey"
+  ) +
+  annotate(
+    "segment",
+    x = 2020.9, # Play around with the coordinates until you're satisfied
+    y = 38.5,
+    yend = 33,
+    xend =  2020.9,
+    linewidth = .5,
+    arrow = arrow(length = unit(5, 'pt')),
+    colour = "grey"
+  )
+
+f2pb
