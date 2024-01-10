@@ -6,15 +6,15 @@
 ##### install and load packages #####
 rm(list=ls())
 # Package names
-packages <- c("sf","readr","tidyr","dplyr","ggplot2",
-              "stringr","magrittr", "ggrepel", "devtools",
-              "sysfonts","extrafont", "readxl", "cowplot",
+packages <- c("sf","tidyverse", "ggrepel", "devtools",
+              "sysfonts","extrafont", "readxl", 
               "patchwork", "Cairo", "lubridate", "ragg",
               "camcorder", "devtools", "geodata", "reticulate",
-              "tidyterra", "janitor", "rnaturalearth", "cartogram",
+              "tidyterra", "janitor", "rnaturalearth",
               "ggtext")
 
 extrafont::loadfonts("win")
+
 # install packages not yet installed
 install_package <- packages %in% rownames(installed.packages())
 if (any(install_package == FALSE)) {
@@ -41,6 +41,7 @@ dataraw <- paste(main, "ph-quick/dataraw", sep = "/")
 plots <- paste(main, "ph-quick/plots", sep = "/")
 code <- paste(main, "ph-quick/code", sep = "/")
 
+# define %notin%
 `%notin%` <- Negate(`%in%`)
 
 
@@ -51,8 +52,6 @@ ph <- as_sf(gadm(country = "PHL",
                  path = dataraw)) %>%
   st_transform(crs="EPSG:32651") %>%
   select(NAME_1, geometry)
-
-str(ph)
 
 # load places from Natural Earth, keep 3 major cities in the Ph
 places <- ne_download(
@@ -83,6 +82,7 @@ mindanao <- c("Region IX (Zamboanga Peninsula)", "Region X (Northern Mindanao)",
               "Region XIII (Caraga)", 
               "Autonomous Region in Muslim Mindana Bangsamoro Autonomous Region in Muslim Mindanao (ARMM/BARMM)")
 
+# poverty incidence (rate) data
 df_pov <- paste(dataraw,
                 "1E3DF020.csv",
                 sep = "/") %>%
@@ -113,8 +113,6 @@ df_pov <- paste(dataraw,
     region %in% visayas ~ "Visayas",
     region %in% mindanao ~ "Mindanao"
   ))
-
-
 
 
 
@@ -185,9 +183,6 @@ df_pov_ph <- ph %>%
     incidence_pctpoint_2015_2021 > 0 & incidence_pctpoint_2015_2021 <= 10 ~ "10",
     incidence_pctpoint_2015_2021 > 10 ~ "20"
   ))
-
-summary(df_pov_ph$incidence_pctpoint_2018_2021)
-summary(df_pov_ph$incidence_pctpoint_2015_2021)
 
 
 # plotting normalized index for 2019
@@ -325,7 +320,7 @@ f2pa <- ggplot(data = df_island_group) +
 
 f2pa
 
-##### by major island group
+##### by major island group #####
 df_pov_f2 <- paste(dataraw,
                    "1E3DF130.csv",
                    sep = "/") %>%
@@ -457,6 +452,8 @@ ggsave(
 df_urban_file <- paste(dataraw,
                        "1_2020%20CPH_Urban%20Population_PR%20Statistical%20Tables_RML_063022_ONS%20%282%29.xlsx",
                        sep = "/")
+
+# read urban population data
 df_urban <- read_excel(path = df_urban_file,
                        sheet = "Table A",
                        skip = 4) %>%
@@ -516,13 +513,33 @@ highlights_line <- c("Luzon*"="#56B4E9",
 # line plot - overtime, major island groups, geography
 f3 <- ggplot(data = df_urban1) +
   theme_minimal(base_family = "Noto Sans") +
+  geom_point(aes(x = pct_urban_2020, 
+                 y = poverty_incidence_2021,
+                 color = island_group, 
+                 group = island_group),
+            size = 2,
+            alpha = 0.7) + 
   geom_point(aes(x = pct_urban_2015, 
                  y = poverty_incidence_2015,
                  color = island_group, 
                  group = island_group),
-            size = 2) +
-  geom_smooth(method = "lm", se = FALSE) +
+             size = 2,
+             alpha = 0.7) +
+  geom_segment(aes(x = pct_urban_2015, 
+                   y = poverty_incidence_2015, 
+                   xend = pct_urban_2020, 
+                   yend = poverty_incidence_2021, 
+                   colour = island_group),
+               arrow = arrow(length = unit(.01, "npc"))) +
+# 
+#   geom_smooth(aes(y = pct_urban_2020,
+#                   x = poverty_incidence_2021),
+#               method = "lm", se = FALSE) +
   scale_color_manual(values = highlights_line) +
+  scale_x_continuous(position = "bottom",
+                     expand = c(0,1),
+                     limits = c(1, 110)) +
+  scale_y_continuous(position = "right") + 
   theme(panel.border = element_blank(),
         axis.title.x = element_blank(), # adjust x axis title
         axis.title.y = element_blank(), # adjust y axis title
@@ -530,15 +547,32 @@ f3 <- ggplot(data = df_urban1) +
         axis.ticks.y = element_blank(), # remove y axis ticks
         axis.line.x = element_line(), # adjust x axis line
         #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
-        panel.grid.major.x = element_blank(), # remove major x lines
+        #panel.grid.major.x = element_blank(), # remove major x lines
         panel.grid.minor.x = element_blank(), # remove minor x lines
         panel.grid.minor.y = element_blank(),
         plot.margin = margin(0, 10, 0, 10),
         #legend.position = "none",
         axis.text.x = element_text(size=8),
-        axis.text.y = element_text(size=8)) +
-  scale_x_continuous(position = "top") + # move the x axis labels up top
-  scale_y_reverse(limits = c(80, 0))
+        axis.text.y = element_text(size=8,
+                                   vjust = -.5,
+                                   hjust = 0)) +
+  theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
+  labs(title = "Urban poverty",
+       subtitle = "Urbanization rate and poverty rate, 2015",
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+  theme(plot.title = element_text(face="bold",
+                                  size=12,
+                                  margin=margin(t=10, r=0, b=2, l=10, "pt")),
+        plot.subtitle = element_text(size=10,
+                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
+        #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
+        plot.caption = element_markdown(hjust = 0,
+                                        size = 6,
+                                        color="grey",
+                                        margin=margin(t=0,r=0,b=0,l=0, "pt")),
+        plot.caption.position = "plot",
+        axis.title = element_blank()) 
+# trick to move axis labels into plot!!
 
 f3
 
