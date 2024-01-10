@@ -7,13 +7,12 @@
 rm(list=ls())
 # Package names
 packages <- c("sf","tidyverse", "ggrepel", "devtools",
-              "sysfonts","extrafont", "readxl", 
-              "patchwork", "Cairo", "lubridate", "ragg",
+              "sysfonts", "extrafont", "readxl", 
+              "patchwork", "lubridate", "ragg",
               "camcorder", "devtools", "geodata", "reticulate",
               "tidyterra", "janitor", "rnaturalearth",
               "ggtext")
 
-extrafont::loadfonts("win")
 
 # install packages not yet installed
 install_package <- packages %in% rownames(installed.packages())
@@ -33,6 +32,8 @@ POLYFUZZ <- reticulate::import("polyfuzz")
 #devtools::install_github("yutannihilation/ggsflabel")
 library(ggsflabel)
 
+extrafont::loadfonts("win")
+
 ##### set up directories ######
 main <- case_when(Sys.getenv("USERNAME") == "jgole" ~ "C:/Users/jgole/Dropbox/Portfolio",
                   Sys.getenv("USER") == "janoledan" ~ "/Users/janoledan/Dropbox/Portfolio")
@@ -45,7 +46,8 @@ code <- paste(main, "ph-quick/code", sep = "/")
 `%notin%` <- Negate(`%in%`)
 
 
-##### read data #####
+
+##### plot 1 - province level poverty read data #####
 # read admin1 ph data
 ph <- as_sf(gadm(country = "PHL",
                  level = 1,
@@ -163,7 +165,7 @@ df_pov1 <- df_pov %>%
     across(starts_with("poverty"), ~as.numeric(.))) %>%
   filter(province_dummy == 1 | NAME_1 == "Metropolitan Manila") %>%
   select(NAME_1, province, island_group, starts_with("incidence"), starts_with("poverty")) %>%
-  filter(!is.na(NAME_1), !(province %in% c("Cotabato City", "Isabela City"))) 
+  filter(!is.na(NAME_1), province %notin% c("Cotabato City", "Isabela City")) 
 # isabela city, cotabato city are in the PH data, but not in shapefile data
 # drop from data
 
@@ -282,6 +284,7 @@ highlights <- c("Luzon"="#56B4E9",
                 "Visayas" = "#009E73",
                 "Mindanao" = "#CC79A7")
 
+# prepare island group df
 df_island_group <- df_pov_ph %>%
   group_by(island_group) %>%
   summarise()
@@ -320,7 +323,7 @@ f2pa <- ggplot(data = df_island_group) +
 
 f2pa
 
-##### by major island group #####
+##### plot 2 - poverty by major island group #####
 df_pov_f2 <- paste(dataraw,
                    "1E3DF130.csv",
                    sep = "/") %>%
@@ -371,8 +374,11 @@ f2pb <- ggplot(data = df_pov_f2) +
         panel.grid.minor.y = element_blank(),
         plot.margin = margin(0, 10, 0, 10),
         legend.position = "none",
-        axis.text.x = element_text(size=8),
-        axis.text.y = element_text(size=8)) +
+        axis.text.x = element_text(size=6),
+        axis.text.y = element_text(size=6,
+                                  vjust = -.5,
+                                  hjust = 0)) +
+  theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
   annotate(geom = "text", 
            x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
            y = c(34.5, 29, 19, 14.5, 5), 
@@ -435,7 +441,6 @@ f2 <- f2pa + f2pb +
 f2
 
 
-
 ggsave(
   filename = "test1.png",
   plot = f2,
@@ -448,7 +453,7 @@ ggsave(
   dpi = 300
 )
 
-##### get percentage of province that is urban #####
+##### plot 3 - urbanisation and poverty #####
 df_urban_file <- paste(dataraw,
                        "1_2020%20CPH_Urban%20Population_PR%20Statistical%20Tables_RML_063022_ONS%20%282%29.xlsx",
                        sep = "/")
@@ -498,11 +503,11 @@ df_urban1 <- df_urban %>%
   relocate(NAME_1, province, island_group) %>%
   filter(province %notin% c("1st District", "2nd District", "3rd District", "4th District")) %>%
   mutate(province = ifelse(NAME_1 == "Metropolitan Manila", "Metropolitan Manila", province),
-         island_group = ifelse(island_group == "Luzon", "Luzon*", island_group))
+         island_group = ifelse(island_group == "Luzon", "Luzon*", island_group)) 
 # isabela city, cotabato city are in the PH data, but not in shapefile data
 # drop from data
 
-##### plotting #####
+##### plotting plot 3 #####
 # want to see urban x poverty plotted
 highlights_line <- c("Luzon*"="#56B4E9",
                      "NCR" = "#E69F00",
@@ -511,6 +516,8 @@ highlights_line <- c("Luzon*"="#56B4E9",
                      "Philippines" = "#999999")
 
 # line plot - overtime, major island groups, geography
+
+#### segment plot - too messy? ####
 f3 <- ggplot(data = df_urban1) +
   theme_minimal(base_family = "Noto Sans") +
   geom_point(aes(x = pct_urban_2020, 
@@ -530,7 +537,7 @@ f3 <- ggplot(data = df_urban1) +
                    xend = pct_urban_2020, 
                    yend = poverty_incidence_2021, 
                    colour = island_group),
-               arrow = arrow(length = unit(.01, "npc"))) +
+               arrow = arrow(length = unit(5, "pt"))) +
 # 
 #   geom_smooth(aes(y = pct_urban_2020,
 #                   x = poverty_incidence_2021),
@@ -557,6 +564,8 @@ f3 <- ggplot(data = df_urban1) +
                                    vjust = -.5,
                                    hjust = 0)) +
   theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
+  th +
+  # trick to move axis labels into plot!!
   labs(title = "Urban poverty",
        subtitle = "Urbanization rate and poverty rate, 2015",
        caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
@@ -572,46 +581,70 @@ f3 <- ggplot(data = df_urban1) +
                                         margin=margin(t=0,r=0,b=0,l=0, "pt")),
         plot.caption.position = "plot",
         axis.title = element_blank()) 
-# trick to move axis labels into plot!!
 
 f3
 
+#### scatter plot ####
+f3 <- ggplot(aes(x = pct_urban_2020, 
+                 y = poverty_incidence_2021,
+                 color = island_group, 
+                 group = island_group),
+             data = df_urban1) +
+  geom_point(size = 3,
+             alpha = 0.7) + 
+  geom_text_repel(aes(label = NAME_1),
+                  color = "gray20",
+                  data = subset(df_urban1, NAME_1 %in% label),
+                  force = 5) +
+  # geom_smooth(aes(x = pct_urban_2020,
+  #                   y = poverty_incidence_2021),
+  #               method = "lm", se = FALSE) +
+  scale_color_manual(values = highlights_line) +
+  scale_x_continuous(position = "bottom",
+                     expand = c(0,.1),
+                     limits = c(.1, 110),
+                     breaks = seq(0, 100, 20)) +
+  scale_y_continuous(position = "right") + 
+  theme(panel.border = element_blank(),
+        axis.title.x = element_blank(), # adjust x axis title
+        axis.title.y = element_blank(), # adjust y axis title
+        axis.ticks.x = element_line(colour="black"),
+        axis.ticks.y = element_blank(), # remove y axis ticks
+        axis.line.x = element_line(), # adjust x axis line
+        #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
+        #panel.grid.major.x = element_blank(), # remove major x lines
+        panel.grid.minor.x = element_blank(), # remove minor x lines
+        panel.grid.minor.y = element_blank(),
+        plot.margin = margin(t=0, r=10, b=0, l=10),
+        #legend.position = "none",
+        axis.text.x = element_text(size=8),
+        axis.text.y = element_text(size=8,
+                                   vjust = -.5,
+                                   hjust = 0)) +
+  theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
+  labs(title = "Urban poverty",
+       subtitle = "Urbanization rate and poverty rate by province, 2015",
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+  th
 
-+
-  scale_x_continuous(position = "bottom",   # move the x axis labels up top
-                     breaks = c(2015, 2018, 2021),
-                     limits = c(2015, 2021),
-                     expand = c(0,.01)) +
 
-  annotate(geom = "text", 
-           x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
-           y = c(34.5, 29, 19, 14.5, 5), 
-           label = c("Mindanao", "Visayas", "Philippines", "Luzon*", "NCR"),
-           colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
-           family = "Noto Sans",
-           fontface = "bold",
-           size = 8/3) +
-  annotate(
-    "text",
-    x = 2020.8,
-    y = 37,
-    label = "Decreased\npoverty\nrate",
-    hjust = 1,
-    lineheight = .7,
-    family = "Noto Sans",
-    fontface = 'bold', 
-    size = 8/4,
-    colour = "grey"
-  ) +
-  annotate(
-    "segment",
-    x = 2020.9, # Play around with the coordinates until you're satisfied
-    y = 38.5,
-    yend = 33,
-    xend =  2020.9,
-    linewidth = .5,
-    arrow = arrow(length = unit(5, 'pt')),
-    colour = "grey"
-  )
+f3
 
-f2pb
+# define main theme components
+th <- theme_minimal(base_family = "Noto Sans") + 
+  theme(plot.title = element_text(face = "bold", # plot title, subtitle, caption
+                                  size = 12,
+                                  margin = margin(t=10, r=0, b=2, l=10, "pt")),
+        plot.subtitle = element_text(size = 10,
+                                     margin = margin(t=0,r=0,b=0,l=0, "pt")),
+        #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
+        plot.caption = element_markdown(hjust = 0,
+                                        size = 6,
+                                        color = "grey",
+                                        margin = margin(t=0,r=0,b=0,l=0, "pt")),
+        plot.caption.position = "plot",
+        axis.title = element_blank()) 
+
+
+label <- c("Apayao", "Sulu", "Metropolitan Manila")
+
