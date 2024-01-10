@@ -10,14 +10,31 @@ thumbnail: ""
 
 <!--![fig1]({{site.url}}/assets/images/wiki-nc/wiki-nc-fig1.png)-->
 
-The Philippines, home to over 7,600 islands and a growing population of 113 million, has poverty reduction on its mind. President Ferdinand Marcos Jr hopes to decrease the country's poverty rate to 9% by the end of his term in 2028. As of the most recent official data from 2021, the current poverty rate of the country stands at 18.1%. With four years to go to achieve this goal [continue here] 
+[intro and comparison to SEA neighbours]
+[brief history of poverty reduction efforts]
+[current efforts in poverty reduction]
 
-The Philippines is split into three major island groups from north to south: Luzon, Visayas, and Mindanao. The National Capital Region (NCR) contains the capital Manila along with 16 other cities and municipalities. The poverty rate is defined as the share of poor Filipinos whose income per person is insufficient to meet their basic needs. Average poverty rate by major island group or region follows the reverse pattern from top to bottom; Mindanao records the highest poverty rate, followed by Visayas, Luzon (excluding the NCR), with the NCR boasting the lowest poverty rate. The average for the entire country cuts through the middle (see chart).
+The Philippines, home to over 7,600 islands and a growing population of 113 million, has poverty reduction on its mind. President Ferdinand Marcos Jr hopes to decrease the country's poverty rate to 9% by the end of his term in 2028 through a mix of economic assistance and social development programs targetting the country's poorest populations. In 2021, the year of the most recent official data, the current poverty rate of the country stands at 18.1%. With four years to go to achieve this goal [continue here] 
 
-Mindanao, on average, saw a consistent decrease in its poverty rate over the three years of data. The remaining regions show a decrease in poverty rates from 2015 to 2018 followed by an increase into 2021, attributed to the economic shutdown as a result of the 2020 COVID-19 pandemic. Over the three years of data, the order remains the same from top to bottom. 
+<!-- average poverty rate by region -->
+The Philippines is split into three major island groups from north to south: Luzon, Visayas, and Mindanao. The National Capital Region (NCR) contains the capital Manila along with 16 other cities and municipalities. The poverty rate is defined as the share of poor Filipinos whose income per person is insufficient to meet their basic needs. Average poverty rate by region follows the reverse pattern from top to bottom; Mindanao records the highest poverty rate, followed by Visayas, Luzon (excluding the NCR), with the NCR boasting the lowest poverty rate. The average for the entire country cuts through the middle (see chart).
+
+Mindanao's poverty rate, on average, consistently decreased over the three years of data. The remaining regions follow a similar decrease in poverty rates but only from 2015 to 2018, as they increased going into 2021. Policy makers attribute this increase to the economic shutdown caused by the 2020 COVID-19 pandemic. Estimates suggest that [x] amount of Filipinos were pushed into poverty as a result. 
+Over the three years of data, the order remains the same from top to bottom. 
+
+<!-- province level poverty --> 
+At the provincial level, a handful of provinces saw large reductions in poverty rates between 2015 and 2021. 
+In Luzon, provinces in the CAR saw the largest percentage point reductions in poverty rates.
+All provinces in Mainland Mindanao saw decreased poverty rates
+Few provinces saw increases in poverty rates from 2015 to 2021.  
+
+<!-- reasons for poverty -->
+Natural disasters are one of the main challenges to poverty reduction. 
 
 <!-- urban/rural poverty -->
-<!-- province level poverty -->
+[next plot to make?]
+[why is Mindanao's poverty rate high relative to the other regions?]
+[is it urban/rural differences?]
 
 
 
