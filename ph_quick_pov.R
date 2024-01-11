@@ -46,10 +46,10 @@ code <- paste(main, "ph-quick/code", sep = "/")
 
 
 
-##### define main ggplot theme components #####
+##### theme define main ggplot theme components #####
 th <- theme_minimal(base_family = "Noto Sans") + 
   theme(panel.border = element_blank(),
-        plot.background = element_rect(fill = '#FFFFFF'),
+        #plot.background = element_rect(fill = '#FFFFFF'),
         plot.margin = margin(t = 10, r = 10, b = 10, l = 10, unit = "pt"),
         plot.title = element_text(face = "bold", # plot title, subtitle, caption
                                   size = 12,
@@ -224,94 +224,94 @@ df_pov_ph <- ph %>%
 
 
 # plotting normalized index for 2019
-# camcorder to set up and output plots
-# camcorder::gg_record(
-#   dir = plots,
-#   device = "png",
-#   scale = 2,
-#   width = 2,
-#   height = 3,
-#   units = "in",
-#   dpi = 300,
-#   bg = "white"
-# )
+#camcorder to set up and output plots
+camcorder::gg_record(
+  dir = plots,
+  device = "png",
+  scale = 1,
+  width = 6,
+  height = 3.5,
+  units = "in",
+  dpi = 300,
+  bg = "white"
+)
 
-
-col <- c("#053061", "#2166ac", "#4393c3", "#92c5de", "#d1e5f0", "#fddbc7", "#f4a582", "#d6604d")
-
-# plot - geography
-f1 <- ggplot() + 
-  theme_minimal(base_family = "Noto Sans") +
-  geom_sf(data = df_pov_ph, 
-          aes(fill = qt),
-          color="#999999",
-          linewidth = 0.1) +
-  scale_fill_manual(values = col,
-                    breaks = c("-40", "-30", "-20", "-10", "0", "10", "20"),
-                    labels = c("-40", "", "-20", "", "0", "", "+20")) +
-  geom_sf(data = places, 
-          aes(color = "black"),
-          color = "black",
-          shape = places$shape) +
-  geom_sf_text_repel(data = places, 
-                     aes(label = NAME, 
-                         geometry = geometry,
-                         family = "Noto Sans"), 
-                     nudge_x = c(-200000), 
-                     nudge_y = c(0),
-                     segment.size = .5, 
-                     size = 3) +
-  coord_sf(datum = NA,
-           xlim = c(-200000, 1000000),
-           ylim = c(500000, 2400000)) + # adjust size of plot?
-  theme(plot.title = element_text(face="bold",
-                                  size=12,
-                                  margin=margin(t=10, r=0, b=3, l=10, "pt")),
-        plot.subtitle = element_text(size=10,
-                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
-        plot.caption = element_markdown(hjust = 0,
-                                    size = 6,
-                                    color="grey",
-                                    margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption.position = "plot",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.title = element_blank()) +
-  guides(color=guide_legend(nrow = 1),
-         fill=guide_legend(nrow = 1,
-                           label.position = "bottom",
-                           label.hjust = 1)) +
-  theme(legend.position = c(0.73,.94), # where legend goes in plot
-        legend.margin= margin(t=0,r=0,b=0,l=0, "pt"), # adjust padding in legend
-        legend.justification = "right",
-        legend.direction = "horizontal", # horizontal legend
-        legend.title = element_blank(), # no legend title
-        legend.spacing.y= unit(1, "pt"), # modify keys in legend
-        legend.spacing.x= unit(0, "pt"),
-        legend.key.width = unit(25, "pt"),
-        legend.key.height = unit(10, "pt"),
-        legend.text = element_text(size = 8)) +  
-  labs(title = "Poverty rates in the Philippines",
-       subtitle = "Percentage point change, 2015-2021",
-       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
-  annotate("text", 
-           x = 590000, 
-           y = 2450000, 
-           label = "Increased →",
-           family = "Noto Sans",
-           size = 8/3) +
-  annotate("text", 
-           x = -130000, 
-           y = 2450000, 
-           label = "← Decreased",
-           family = "Noto Sans",
-           size = 8/3)
-
-f1
+# 
+# col <- c("#053061", "#2166ac", "#4393c3", "#92c5de", "#d1e5f0", "#fddbc7", "#f4a582", "#d6604d")
+# 
+# # plot - geography
+# f1 <- ggplot() + 
+#   theme_minimal(base_family = "Noto Sans") +
+#   geom_sf(data = df_pov_ph, 
+#           aes(fill = qt),
+#           color="#999999",
+#           linewidth = 0.1) +
+#   scale_fill_manual(values = col,
+#                     breaks = c("-40", "-30", "-20", "-10", "0", "10", "20"),
+#                     labels = c("-40", "", "-20", "", "0", "", "+20")) +
+#   geom_sf(data = places, 
+#           aes(color = "black"),
+#           color = "black",
+#           shape = places$shape) +
+#   geom_sf_text_repel(data = places, 
+#                      aes(label = NAME, 
+#                          geometry = geometry,
+#                          family = "Noto Sans"), 
+#                      nudge_x = c(-200000), 
+#                      nudge_y = c(0),
+#                      segment.size = .5, 
+#                      size = 3) +
+#   coord_sf(datum = NA,
+#            xlim = c(-200000, 1000000),
+#            ylim = c(500000, 2400000)) + # adjust size of plot?
+#   theme(plot.title = element_text(face="bold",
+#                                   size=12,
+#                                   margin=margin(t=10, r=0, b=3, l=10, "pt")),
+#         plot.subtitle = element_text(size=10,
+#                                      margin=margin(t=0,r=0,b=0,l=0, "pt")),
+#         #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
+#         plot.caption = element_markdown(hjust = 0,
+#                                     size = 6,
+#                                     color="grey",
+#                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
+#         plot.caption.position = "plot",
+#         axis.text.x = element_blank(),
+#         axis.text.y = element_blank(),
+#         axis.title = element_blank()) +
+#   guides(color=guide_legend(nrow = 1),
+#          fill=guide_legend(nrow = 1,
+#                            label.position = "bottom",
+#                            label.hjust = 1)) +
+#   theme(legend.position = c(0.73,.94), # where legend goes in plot
+#         legend.margin= margin(t=0,r=0,b=0,l=0, "pt"), # adjust padding in legend
+#         legend.justification = "right",
+#         legend.direction = "horizontal", # horizontal legend
+#         legend.title = element_blank(), # no legend title
+#         legend.spacing.y= unit(1, "pt"), # modify keys in legend
+#         legend.spacing.x= unit(0, "pt"),
+#         legend.key.width = unit(25, "pt"),
+#         legend.key.height = unit(10, "pt"),
+#         legend.text = element_text(size = 8)) +  
+#   labs(title = "Poverty rates in the Philippines",
+#        subtitle = "Percentage point change, 2015-2021",
+#        caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+#   annotate("text", 
+#            x = 590000, 
+#            y = 2450000, 
+#            label = "Increased →",
+#            family = "Noto Sans",
+#            size = 8/3) +
+#   annotate("text", 
+#            x = -130000, 
+#            y = 2450000, 
+#            label = "← Decreased",
+#            family = "Noto Sans",
+#            size = 8/3)
+# 
+# f1
 
 # okabe-ito
-palette.colors(palette = "Okabe-Ito")
+# palette.colors(palette = "Okabe-Ito")
 cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
            "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -325,6 +325,7 @@ df_island_group <- df_pov_ph %>%
   group_by(island_group) %>%
   summarise()
 
+##### map by major island group #####
 # label NCR in yellow 
 # plot - geography
 f2pa <- ggplot(data = df_island_group) + 
@@ -343,15 +344,15 @@ f2pa <- ggplot(data = df_island_group) +
            expand = F) + # adjust size of plot?
   theme(legend.position = "none") +
   annotate(geom = "text", 
-           x = c(250000, 250000, 600000, 2015.38), 
-           y = c(800000, 1000000, 1800000, 5), 
-           label = c("Mindanao", "Visayas", "Luzon*", "NCR"),
+           x = c(200000, 280000, 600000, 60000), 
+           y = c(800000, 1100000, 1800000, 1570000), 
+           label = c("Mindanao", "Visayas", "Luzon", "NCR"),
            colour = c("#CC79A7", "#009E73", "#56B4E9","#E69F00"),
            family = "Noto Sans",
            fontface = "bold",
-           size = 8/.pt)
+           size = 6/.pt) 
 
-f2pa
+  f2pa
 
 ##### plot 2 - poverty by major island group #####
 df_pov_f2 <- paste(dataraw,
@@ -385,22 +386,42 @@ f2pb <- ggplot(data = df_pov_f2,
                    color = major_island_group, 
                    group = major_island_group)) +
   th +
-  geom_line(linewidth = 1) +
+  geom_line(linewidth = 0.5) +
+  geom_point(size = 1) +
+  coord_cartesian(clip = "off") +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom",   # move the x axis labels up top
                      breaks = c(2015, 2018, 2021),
-                     limits = c(2015, 2021),
+                     limits = c(2015, 2021.5),
                      expand = c(0,.01)) +
   scale_y_continuous(position = "right") + # move the x axis labels up top
   theme(legend.position = "none") +
-  annotate(geom = "text", 
-           x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
-           y = c(34.5, 29, 19, 14.5, 5), 
-           label = c("Mindanao", "Visayas", "Philippines", "Luzon*", "NCR"),
-           colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
+  annotate(geom = "text",
+           x = c(2015.8),
+           y = c(19),
+           label = c("Philippines"),
+           colour = c("#999999"),
            family = "Noto Sans",
            fontface = "bold",
            size = 8/.pt) +
+  # annotate(geom = "text",
+  #          x = c(2017, 2017),
+  #          y = c(37, 35.5),
+  #          label = c("Mindanao", "declined\npoverty rates\nover time"),
+  #          hjust = 0,
+  #          lineheight = .7,
+  #          colour = c("#CC79A7", "#999999"),
+  #          family = "Noto Sans",
+  #          fontface = "bold",
+  #          size = 8/.pt) +
+  # annotate(geom = "text", 
+  #          x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
+  #          y = c(34.5, 29, 19, 14.5, 5), 
+  #          label = c("Mindanao", "Visayas", "Philippines", "Luzon*", "NCR"),
+  #          colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
+  #          family = "Noto Sans",
+  #          fontface = "bold",
+  #          size = 8/.pt) +
   annotate(
     "text",
     x = 2020.8,
@@ -410,7 +431,7 @@ f2pb <- ggplot(data = df_pov_f2,
     lineheight = .7,
     family = "Noto Sans",
     fontface = 'bold', 
-    size = 8/.pt,
+    size = 6/.pt,
     colour = "#999999"
   ) +
   annotate(
@@ -426,40 +447,19 @@ f2pb <- ggplot(data = df_pov_f2,
 
 f2pb
 
-# figure out how to get numbers above ticks in y-axis
-# axis.text.y = element_text(size=8,
-#                            hjust = 1,
-#                            vjust = 0,
-#                            margin = margin(l = 100, r = 0))
-#https://stackoverflow.com/questions/55406829/ggplot-put-axis-text-inside-plot
-
 # need an arrow and  text 
 f2 <- f2pa + f2pb +
-  plot_layout(widths = c(3, 3.5)) +
   plot_annotation(
     title = "Philippines",
     subtitle = "Average poverty rate by major island group, 2015-2021 %",
     caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
-    theme = th) 
-
-# 
-#   theme(text = element_text("Noto Sans"),
-#         plot.title = element_text(face="bold",
-#                                   size=12,
-#                                   margin=margin(t=10, r=0, b=3, l=10, "pt")),
-#         plot.subtitle = element_text(size=10,
-#                                      margin=margin(t=0,r=0,b=0,l=0, "pt")),
-#         plot.caption = element_markdown(hjust = 0,
-#                                         size = 6,
-#                                         color="grey",
-#                                         margin=margin(t=0,r=0,b=0,l=0, "pt")))
-
+    theme = th)
 
 f2
 
-
 ggsave(
   filename = "test1.png",
+  bg = "#FFFFFF",
   plot = f2,
   device = "png",
   path = plots,
