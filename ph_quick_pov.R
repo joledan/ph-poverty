@@ -46,6 +46,43 @@ code <- paste(main, "ph-quick/code", sep = "/")
 
 
 
+##### define main ggplot theme components #####
+th <- theme_minimal(base_family = "Noto Sans") + 
+  theme(panel.border = element_blank(),
+        plot.background = element_rect(fill = '#FFFFFF'),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 10, unit = "pt"),
+        plot.title = element_text(face = "bold", # plot title, subtitle, caption
+                                  size = 12,
+                                  margin = margin(t=0, r=0, b=2, l=0, "pt")),
+        plot.subtitle = element_text(size = 10,
+                                     margin = margin(t=0,r=0,b=0,l=0, "pt")),
+        plot.caption = element_markdown(hjust = 0,
+                                        size = 6,
+                                        color = "#999999",
+                                        margin = margin(t=0,r=0,b=0,l=0, "pt")),
+        plot.caption.position = "plot") +
+  theme(axis.title = element_blank(),
+        axis.title.x = element_blank(), # adjust x axis title
+        axis.title.y = element_blank(), # adjust y axis title
+        axis.text.x = element_text(size = 8, # make axis text (labels) size 8, black font
+                                   colour = "#000000"),
+        axis.text.y = element_text(size = 8,
+                                   colour = "#000000",
+                                   vjust = -.5,
+                                   hjust = 0),
+        axis.ticks.length.x = unit(4, "pt"), # define tick length and colour for x-axis
+        axis.ticks.x = element_line(colour="#000000"),
+        axis.ticks.y = element_blank(), # remove y axis ticks
+        axis.line.x = element_line(colour = "#000000"), # adjust x axis line
+        panel.grid.major.x = element_blank(), # remove major x lines
+        panel.grid.minor.x = element_blank(), # remove minor x lines
+        panel.grid.minor.y = element_blank(),
+        axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length) )
+
+
+
+
+
 ##### plot 1 - province level poverty read data #####
 # read admin1 ph data
 ph <- as_sf(gadm(country = "PHL",
@@ -291,7 +328,7 @@ df_island_group <- df_pov_ph %>%
 # label NCR in yellow 
 # plot - geography
 f2pa <- ggplot(data = df_island_group) + 
-  theme_minimal(base_family = "Noto Sans") +
+  th +
   geom_sf(aes(fill = island_group),
           color="#FFFFFF",
           linewidth = 0.1) +
@@ -304,21 +341,15 @@ f2pa <- ggplot(data = df_island_group) +
            xlim = c(-200000, 1000000),
            ylim = c(600000, 2300000),
            expand = F) + # adjust size of plot?
-  theme(plot.title = element_text(face="bold",
-                                  size=12,
-                                  margin=margin(t=10, r=0, b=3, l=10, "pt")),
-        plot.subtitle = element_text(size=10,
-                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
-        plot.caption = element_markdown(hjust = 0,
-                                    size = 6,
-                                    color="grey",
-                                    margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption.position = "plot",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.title = element_blank(),
-        legend.position = "none") # specify colour scheme
+  theme(legend.position = "none") +
+  annotate(geom = "text", 
+           x = c(250000, 250000, 600000, 2015.38), 
+           y = c(800000, 1000000, 1800000, 5), 
+           label = c("Mindanao", "Visayas", "Luzon*", "NCR"),
+           colour = c("#CC79A7", "#009E73", "#56B4E9","#E69F00"),
+           family = "Noto Sans",
+           fontface = "bold",
+           size = 8/.pt)
 
 f2pa
 
@@ -348,36 +379,20 @@ highlights_line <- c("Luzon*"="#56B4E9",
                      "Philippines" = "#999999")
 
 # line plot - overtime, major island groups, geography
-f2pb <- ggplot(data = df_pov_f2) +
-  theme_minimal(base_family = "Noto Sans") +
-  geom_line(aes(x = year, 
-                y = incidence_popn,
-                color = major_island_group, 
-                group = major_island_group),
-            size = 1) +
+f2pb <- ggplot(data = df_pov_f2,
+               aes(x = year, 
+                   y = incidence_popn,
+                   color = major_island_group, 
+                   group = major_island_group)) +
+  th +
+  geom_line(linewidth = 1) +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom",   # move the x axis labels up top
                      breaks = c(2015, 2018, 2021),
                      limits = c(2015, 2021),
                      expand = c(0,.01)) +
-  scale_y_continuous(position = "right") +   # move the x axis labels up top
-  theme(panel.border = element_blank(),
-        axis.title.x = element_blank(), # adjust x axis title
-        axis.title.y = element_blank(), # adjust y axis title
-        axis.ticks.x = element_line(colour="black"),
-        axis.ticks.y = element_blank(), # remove y axis ticks
-        axis.line.x = element_line(), # adjust x axis line
-        #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
-        panel.grid.major.x = element_blank(), # remove major x lines
-        panel.grid.minor.x = element_blank(), # remove minor x lines
-        panel.grid.minor.y = element_blank(),
-        plot.margin = margin(0, 10, 0, 10),
-        legend.position = "none",
-        axis.text.x = element_text(size=6),
-        axis.text.y = element_text(size=6,
-                                  vjust = -.5,
-                                  hjust = 0)) +
-  theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
+  scale_y_continuous(position = "right") + # move the x axis labels up top
+  theme(legend.position = "none") +
   annotate(geom = "text", 
            x = c(2015.75, 2016.3, 2015.8, 2015.55, 2015.38), 
            y = c(34.5, 29, 19, 14.5, 5), 
@@ -385,7 +400,7 @@ f2pb <- ggplot(data = df_pov_f2) +
            colour = c("#CC79A7", "#009E73", "#999999", "#56B4E9","#E69F00"),
            family = "Noto Sans",
            fontface = "bold",
-           size = 8/3) +
+           size = 8/.pt) +
   annotate(
     "text",
     x = 2020.8,
@@ -395,8 +410,8 @@ f2pb <- ggplot(data = df_pov_f2) +
     lineheight = .7,
     family = "Noto Sans",
     fontface = 'bold', 
-    size = 8/4,
-    colour = "grey"
+    size = 8/.pt,
+    colour = "#999999"
   ) +
   annotate(
     "segment",
@@ -406,7 +421,7 @@ f2pb <- ggplot(data = df_pov_f2) +
     xend =  2020.9,
     linewidth = .5,
     arrow = arrow(length = unit(5, 'pt')),
-    colour = "grey"
+    colour = "#999999"
   )
 
 f2pb
@@ -424,17 +439,20 @@ f2 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
     subtitle = "Average poverty rate by major island group, 2015-2021 %",
-    caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") &
-  theme(text = element_text("Noto Sans"),
-        plot.title = element_text(face="bold",
-                                  size=12,
-                                  margin=margin(t=10, r=0, b=3, l=10, "pt")),
-        plot.subtitle = element_text(size=10,
-                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption = element_markdown(hjust = 0,
-                                        size = 6,
-                                        color="grey",
-                                        margin=margin(t=0,r=0,b=0,l=0, "pt")))
+    caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
+    theme = th) 
+
+# 
+#   theme(text = element_text("Noto Sans"),
+#         plot.title = element_text(face="bold",
+#                                   size=12,
+#                                   margin=margin(t=10, r=0, b=3, l=10, "pt")),
+#         plot.subtitle = element_text(size=10,
+#                                      margin=margin(t=0,r=0,b=0,l=0, "pt")),
+#         plot.caption = element_markdown(hjust = 0,
+#                                         size = 6,
+#                                         color="grey",
+#                                         margin=margin(t=0,r=0,b=0,l=0, "pt")))
 
 
 f2
@@ -622,39 +640,6 @@ f3 <- ggplot(aes(x = pct_urban_2020,
 
 
 f3
-
-# define main theme components
-th <- theme_minimal(base_family = "Noto Sans") + 
-  theme(panel.border = element_blank(),
-        plot.margin = margin(t = 10, r = 10, b = 10, l = 10, unit = "pt"),
-        plot.title = element_text(face = "bold", # plot title, subtitle, caption
-                                  size = 12,
-                                  margin = margin(t=0, r=0, b=2, l=0, "pt")),
-        plot.subtitle = element_text(size = 10,
-                                     margin = margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption = element_markdown(hjust = 0,
-                                        size = 6,
-                                        color = "#999999",
-                                        margin = margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption.position = "plot") +
-  theme(axis.title = element_blank(),
-        axis.title.x = element_blank(), # adjust x axis title
-        axis.title.y = element_blank(), # adjust y axis title
-        axis.text.x = element_text(size = 8, # make axis text (labels) size 8, black font
-                                   colour = "#000000"),
-        axis.text.y = element_text(size = 8,
-                                   colour = "#000000",
-                                   vjust = -.5,
-                                   hjust = 0),
-        axis.ticks.length.x = unit(4, "pt"), # define tick length and colour for x-axis
-        axis.ticks.x = element_line(colour="#000000"),
-        axis.ticks.y = element_blank(), # remove y axis ticks
-        axis.line.x = element_line(colour = "#000000"), # adjust x axis line
-        panel.grid.major.x = element_blank(), # remove major x lines
-        panel.grid.minor.x = element_blank(), # remove minor x lines
-        panel.grid.minor.y = element_blank(),
-        axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length) )
-
 
 
 label <- c("Apayao", "Sulu", "Metropolitan Manila")
