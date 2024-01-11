@@ -502,7 +502,8 @@ df_urban1 <- df_urban %>%
   relocate(NAME_1, province, island_group) %>%
   filter(province %notin% c("1st District", "2nd District", "3rd District", "4th District")) %>%
   mutate(province = ifelse(NAME_1 == "Metropolitan Manila", "Metropolitan Manila", province),
-         island_group = ifelse(island_group == "Luzon", "Luzon*", island_group)) 
+         island_group = ifelse(island_group == "Luzon", "Luzon*", island_group),
+         pct_urban_change = pct_urban_2020 - pct_urban_2015) 
 # isabela city, cotabato city are in the PH data, but not in shapefile data
 # drop from data
 
@@ -514,23 +515,27 @@ highlights_line <- c("Luzon*"="#56B4E9",
                      "Mindanao" = "#CC79A7",
                      "Philippines" = "#999999")
 
+cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
+           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 # line plot - overtime, major island groups, geography
 
 #### segment plot - too messy? ####
+# doesn't say much
 f3 <- ggplot(data = df_urban1) +
   theme_minimal(base_family = "Noto Sans") +
-  geom_point(aes(x = pct_urban_2020, 
-                 y = poverty_incidence_2021,
-                 color = island_group, 
-                 group = island_group),
-            size = 2,
-            alpha = 0.7) + 
-  geom_point(aes(x = pct_urban_2015, 
-                 y = poverty_incidence_2015,
-                 color = island_group, 
-                 group = island_group),
-             size = 2,
-             alpha = 0.7) +
+  # geom_point(aes(x = pct_urban_2020, 
+  #                y = poverty_incidence_2021,
+  #                color = island_group, 
+  #                group = island_group),
+  #           size = 2,
+  #           alpha = 0.7) + 
+  # geom_point(aes(x = pct_urban_2015, 
+  #                y = poverty_incidence_2015,
+  #                color = island_group, 
+  #                group = island_group),
+  #            size = 2,
+  #            alpha = 0.7) +
   geom_segment(aes(x = pct_urban_2015, 
                    y = poverty_incidence_2015, 
                    xend = pct_urban_2020, 
@@ -583,21 +588,26 @@ f3 <- ggplot(data = df_urban1) +
 
 f3
 
+
 #### scatter plot ####
 f3 <- ggplot(aes(x = pct_urban_2020, 
-                 y = poverty_incidence_2021,
-                 color = island_group, 
-                 group = island_group),
+                 y = poverty_incidence_2021),
              data = df_urban1) +
-  geom_point(size = 3,
-             alpha = 0.7) + 
+  geom_point(aes(colour = island_group, 
+                 group = island_group), 
+             alpha = 0.7,
+             size = 3) + 
   # geom_text_repel(aes(label = NAME_1),
   #                 color = "gray20",
   #                 data = subset(df_urban1, NAME_1 %in% label),
   #                 force = 5) +
-  # geom_smooth(aes(x = pct_urban_2020,
-  #                   y = poverty_incidence_2021),
-  #               method = "lm", se = FALSE) +
+  geom_smooth(aes(x = pct_urban_2020,
+                  y = poverty_incidence_2021,
+                  group = island_group,
+                  colour = island_group),
+              method = "lm", 
+              se = FALSE,
+              linetype = "dashed") +
   th +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom",
