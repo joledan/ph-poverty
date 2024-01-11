@@ -13,7 +13,6 @@ packages <- c("sf","tidyverse", "ggrepel", "devtools",
               "tidyterra", "janitor", "rnaturalearth",
               "ggtext")
 
-
 # install packages not yet installed
 install_package <- packages %in% rownames(installed.packages())
 if (any(install_package == FALSE)) {
@@ -592,58 +591,60 @@ f3 <- ggplot(aes(x = pct_urban_2020,
              data = df_urban1) +
   geom_point(size = 3,
              alpha = 0.7) + 
-  geom_text_repel(aes(label = NAME_1),
-                  color = "gray20",
-                  data = subset(df_urban1, NAME_1 %in% label),
-                  force = 5) +
+  # geom_text_repel(aes(label = NAME_1),
+  #                 color = "gray20",
+  #                 data = subset(df_urban1, NAME_1 %in% label),
+  #                 force = 5) +
   # geom_smooth(aes(x = pct_urban_2020,
   #                   y = poverty_incidence_2021),
   #               method = "lm", se = FALSE) +
+  th +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom",
                      expand = c(0,.1),
-                     limits = c(.1, 110),
+                     limits = c(0, 110),
                      breaks = seq(0, 100, 20)) +
   scale_y_continuous(position = "right") + 
-  theme(panel.border = element_blank(),
-        axis.title.x = element_blank(), # adjust x axis title
-        axis.title.y = element_blank(), # adjust y axis title
-        axis.ticks.x = element_line(colour="black"),
-        axis.ticks.y = element_blank(), # remove y axis ticks
-        axis.line.x = element_line(), # adjust x axis line
-        #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
-        #panel.grid.major.x = element_blank(), # remove major x lines
-        panel.grid.minor.x = element_blank(), # remove minor x lines
-        panel.grid.minor.y = element_blank(),
-        plot.margin = margin(t=0, r=10, b=0, l=10),
-        #legend.position = "none",
-        axis.text.x = element_text(size=8),
-        axis.text.y = element_text(size=8,
-                                   vjust = -.5,
-                                   hjust = 0)) +
-  theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
+  theme(legend.position = "none") +
   labs(title = "Urban poverty",
        subtitle = "Urbanization rate and poverty rate by province, 2015",
-       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
-  th
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
 
 
 f3
 
 # define main theme components
 th <- theme_minimal(base_family = "Noto Sans") + 
-  theme(plot.title = element_text(face = "bold", # plot title, subtitle, caption
+  theme(panel.border = element_blank(),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 10, unit = "pt"),
+        plot.title = element_text(face = "bold", # plot title, subtitle, caption
                                   size = 12,
-                                  margin = margin(t=10, r=0, b=2, l=10, "pt")),
+                                  margin = margin(t=0, r=0, b=2, l=0, "pt")),
         plot.subtitle = element_text(size = 10,
                                      margin = margin(t=0,r=0,b=0,l=0, "pt")),
-        #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
         plot.caption = element_markdown(hjust = 0,
                                         size = 6,
-                                        color = "grey",
+                                        color = "#999999",
                                         margin = margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption.position = "plot",
-        axis.title = element_blank()) 
+        plot.caption.position = "plot") +
+  theme(axis.title = element_blank(),
+        axis.title.x = element_blank(), # adjust x axis title
+        axis.title.y = element_blank(), # adjust y axis title
+        axis.text.x = element_text(size = 8, # make axis text (labels) size 8, black font
+                                   colour = "#000000"),
+        axis.text.y = element_text(size = 8,
+                                   colour = "#000000",
+                                   vjust = -.5,
+                                   hjust = 0),
+        axis.ticks.length.x = unit(4, "pt"), # define tick length and colour for x-axis
+        axis.ticks.x = element_line(colour="#000000"),
+        axis.ticks.y = element_blank(), # remove y axis ticks
+        axis.line.x = element_line(colour = "#000000"), # adjust x axis line
+        panel.grid.major.x = element_blank(), # remove major x lines
+        panel.grid.minor.x = element_blank(), # remove minor x lines
+        panel.grid.minor.y = element_blank(),
+        axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length) )
+
 
 
 label <- c("Apayao", "Sulu", "Metropolitan Manila")
