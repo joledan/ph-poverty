@@ -55,11 +55,11 @@ th <- theme_minimal(base_family = "Noto Sans") +
                                   size = 12,
                                   margin = margin(t=0, r=0, b=2, l=0, "pt")),
         plot.subtitle = element_text(size = 10,
-                                     margin = margin(t=0,r=0,b=0,l=0, "pt")),
+                                     margin = margin(t=0,r=0,b=5,l=0, "pt")),
         plot.caption = element_markdown(hjust = 0,
                                         size = 6,
                                         color = "#999999",
-                                        margin = margin(t=0,r=0,b=0,l=0, "pt")),
+                                        margin = margin(t=5,r=0,b=0,l=0, "pt")),
         plot.caption.position = "plot") +
   theme(axis.title = element_blank(),
         axis.title.x = element_blank(), # adjust x axis title
@@ -80,7 +80,17 @@ th <- theme_minimal(base_family = "Noto Sans") +
         axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length) )
 
 
-
+#### intialize camcorder to set up and output plots ####
+camcorder::gg_record(
+  dir = plots,
+  device = "png",
+  scale = 1,
+  width = 6,
+  height = 3.5,
+  units = "in",
+  dpi = 300,
+  bg = "white"
+)
 
 
 ##### plot 1 - province level poverty read data #####
@@ -205,7 +215,7 @@ df_pov1 <- df_pov %>%
 # isabela city, cotabato city are in the PH data, but not in shapefile data
 # drop from data
 
-# merge with shapefile 
+# merge with shapefile
 df_pov_ph <- ph %>%
   mutate(in_ph = 1) %>%
   mutate(NAME_1 = case_when(
@@ -221,20 +231,6 @@ df_pov_ph <- ph %>%
     incidence_pctpoint_2015_2021 > 0 & incidence_pctpoint_2015_2021 <= 10 ~ "10",
     incidence_pctpoint_2015_2021 > 10 ~ "20"
   ))
-
-
-# plotting normalized index for 2019
-#camcorder to set up and output plots
-camcorder::gg_record(
-  dir = plots,
-  device = "png",
-  scale = 1,
-  width = 6,
-  height = 3.5,
-  units = "in",
-  dpi = 300,
-  bg = "white"
-)
 
 # 
 # col <- c("#053061", "#2166ac", "#4393c3", "#92c5de", "#d1e5f0", "#fddbc7", "#f4a582", "#d6604d")
@@ -342,7 +338,8 @@ f2pa <- ggplot(data = df_island_group) +
            xlim = c(-200000, 1000000),
            ylim = c(600000, 2300000),
            expand = F) + # adjust size of plot?
-  theme(legend.position = "none") +
+  theme(legend.position = "none",
+        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")) +
   annotate(geom = "text", 
            x = c(200000, 280000, 600000, 60000), 
            y = c(800000, 1100000, 1800000, 1570000), 
@@ -350,9 +347,9 @@ f2pa <- ggplot(data = df_island_group) +
            colour = c("#CC79A7", "#009E73", "#56B4E9","#E69F00"),
            family = "Noto Sans",
            fontface = "bold",
-           size = 6/.pt) 
+           size = 6/.pt)
 
-  f2pa
+f2pa
 
 ##### plot 2 - poverty by major island group #####
 df_pov_f2 <- paste(dataraw,
@@ -390,12 +387,16 @@ f2pb <- ggplot(data = df_pov_f2,
   geom_point(size = 1) +
   coord_cartesian(clip = "off") +
   scale_color_manual(values = highlights_line) +
-  scale_x_continuous(position = "bottom",   # move the x axis labels up top
+  scale_x_continuous(position = "bottom", 
                      breaks = c(2015, 2018, 2021),
                      limits = c(2015, 2021.5),
                      expand = c(0,.01)) +
-  scale_y_continuous(position = "right") + # move the x axis labels up top
-  theme(legend.position = "none") +
+  scale_y_continuous(position = "right",
+                     breaks = c(0, 10, 20, 30, 40),
+                     limits = c(0, 40),
+                     expand = c(0, 0)) +
+  theme(legend.position = "none",
+        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")) +
   annotate(geom = "text",
            x = c(2015.8),
            y = c(19),
@@ -451,24 +452,24 @@ f2pb
 f2 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
-    subtitle = "Average poverty rate by major island group, 2015-2021 %",
-    caption = "NCR = National Capital Region, Luzon* excludes the NCR <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
+    subtitle = "Average poverty rate by region, 2015-2021 %",
+    caption = "NCR = National Capital Region <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
     theme = th)
 
 f2
-
-ggsave(
-  filename = "test1.png",
-  bg = "#FFFFFF",
-  plot = f2,
-  device = "png",
-  path = plots,
-  scale = 1,
-  width = 6,
-  height = 3.5,
-  units = "in",
-  dpi = 300
-)
+# 
+# ggsave(
+#   filename = "test1.png",
+#   bg = "#FFFFFF",
+#   plot = f2,
+#   device = "png",
+#   path = plots,
+#   scale = 1,
+#   width = 6,
+#   height = 3.5,
+#   units = "in",
+#   dpi = 300
+# )
 
 ##### plot 3 - urbanisation and poverty #####
 df_urban_file <- paste(dataraw,
@@ -608,8 +609,8 @@ cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
 
 
 #### scatter plot ####
-f3 <- ggplot(aes(x = pct_urban_2020, 
-                 y = poverty_incidence_2021),
+f3 <- ggplot(aes(y = pct_urban_2020, 
+                 x = poverty_incidence_2021),
              data = df_urban1) +
   geom_point(aes(colour = island_group, 
                  group = island_group), 
@@ -619,28 +620,28 @@ f3 <- ggplot(aes(x = pct_urban_2020,
   #                 color = "gray20",
   #                 data = subset(df_urban1, NAME_1 %in% label),
   #                 force = 5) +
-  geom_smooth(aes(x = pct_urban_2020,
-                  y = poverty_incidence_2021,
-                  group = island_group,
-                  colour = island_group),
-              method = "lm", 
-              se = FALSE,
-              linetype = "dashed") +
+  # geom_smooth(aes(x = pct_urban_2020,
+  #                 y = poverty_incidence_2021,
+  #                 group = island_group,
+  #                 colour = island_group),
+  #             method = "lm", 
+  #             se = FALSE,
+  #             linetype = "dashed") +
+  coord_cartesian(clip = "off") +
   th +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom",
                      expand = c(0,.1),
-                     limits = c(0, 110),
-                     breaks = seq(0, 100, 20)) +
-  scale_y_continuous(position = "right") + 
+                     limits = c(0, 66),
+                     breaks = seq(0, 60, 20)) +
+  scale_y_continuous(position = "right") +
   theme(legend.position = "none") +
   labs(title = "Urban poverty",
        subtitle = "Urbanization rate and poverty rate by province, 2015",
        caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
 
-
 f3
 
-
-label <- c("Apayao", "Sulu", "Metropolitan Manila")
+# 
+# label <- c("Apayao", "Sulu", "Metropolitan Manila")
 
