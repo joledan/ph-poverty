@@ -540,71 +540,71 @@ cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
 
 #### segment plot - too messy? ####
 # doesn't say much
-f3 <- ggplot(data = df_urban1) +
-  theme_minimal(base_family = "Noto Sans") +
-  # geom_point(aes(x = pct_urban_2020, 
-  #                y = poverty_incidence_2021,
-  #                color = island_group, 
-  #                group = island_group),
-  #           size = 2,
-  #           alpha = 0.7) + 
-  # geom_point(aes(x = pct_urban_2015, 
-  #                y = poverty_incidence_2015,
-  #                color = island_group, 
-  #                group = island_group),
-  #            size = 2,
-  #            alpha = 0.7) +
-  geom_segment(aes(x = pct_urban_2015, 
-                   y = poverty_incidence_2015, 
-                   xend = pct_urban_2020, 
-                   yend = poverty_incidence_2021, 
-                   colour = island_group),
-               arrow = arrow(length = unit(5, "pt"))) +
+# f3 <- ggplot(data = df_urban1) +
+#   theme_minimal(base_family = "Noto Sans") +
+#   # geom_point(aes(x = pct_urban_2020, 
+#   #                y = poverty_incidence_2021,
+#   #                color = island_group, 
+#   #                group = island_group),
+#   #           size = 2,
+#   #           alpha = 0.7) + 
+#   # geom_point(aes(x = pct_urban_2015, 
+#   #                y = poverty_incidence_2015,
+#   #                color = island_group, 
+#   #                group = island_group),
+#   #            size = 2,
+#   #            alpha = 0.7) +
+#   geom_segment(aes(x = pct_urban_2015, 
+#                    y = poverty_incidence_2015, 
+#                    xend = pct_urban_2020, 
+#                    yend = poverty_incidence_2021, 
+#                    colour = island_group),
+#                arrow = arrow(length = unit(5, "pt"))) +
+# # 
+# #   geom_smooth(aes(y = pct_urban_2020,
+# #                   x = poverty_incidence_2021),
+# #               method = "lm", se = FALSE) +
+#   scale_color_manual(values = highlights_line) +
+#   scale_x_continuous(position = "bottom",
+#                      expand = c(0,1),
+#                      limits = c(1, 110)) +
+#   scale_y_continuous(position = "right") + 
+#   theme(panel.border = element_blank(),
+#         axis.title.x = element_blank(), # adjust x axis title
+#         axis.title.y = element_blank(), # adjust y axis title
+#         axis.ticks.x = element_line(colour="black"),
+#         axis.ticks.y = element_blank(), # remove y axis ticks
+#         axis.line.x = element_line(), # adjust x axis line
+#         #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
+#         #panel.grid.major.x = element_blank(), # remove major x lines
+#         panel.grid.minor.x = element_blank(), # remove minor x lines
+#         panel.grid.minor.y = element_blank(),
+#         plot.margin = margin(0, 10, 0, 10),
+#         #legend.position = "none",
+#         axis.text.x = element_text(size=8),
+#         axis.text.y = element_text(size=8,
+#                                    vjust = -.5,
+#                                    hjust = 0)) +
+#   theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
+#   th +
+#   # trick to move axis labels into plot!!
+#   labs(title = "Urban poverty",
+#        subtitle = "Urbanization rate and poverty rate, 2015",
+#        caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+#   theme(plot.title = element_text(face="bold",
+#                                   size=12,
+#                                   margin=margin(t=10, r=0, b=2, l=10, "pt")),
+#         plot.subtitle = element_text(size=10,
+#                                      margin=margin(t=0,r=0,b=0,l=0, "pt")),
+#         #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
+#         plot.caption = element_markdown(hjust = 0,
+#                                         size = 6,
+#                                         color="grey",
+#                                         margin=margin(t=0,r=0,b=0,l=0, "pt")),
+#         plot.caption.position = "plot",
+#         axis.title = element_blank()) 
 # 
-#   geom_smooth(aes(y = pct_urban_2020,
-#                   x = poverty_incidence_2021),
-#               method = "lm", se = FALSE) +
-  scale_color_manual(values = highlights_line) +
-  scale_x_continuous(position = "bottom",
-                     expand = c(0,1),
-                     limits = c(1, 110)) +
-  scale_y_continuous(position = "right") + 
-  theme(panel.border = element_blank(),
-        axis.title.x = element_blank(), # adjust x axis title
-        axis.title.y = element_blank(), # adjust y axis title
-        axis.ticks.x = element_line(colour="black"),
-        axis.ticks.y = element_blank(), # remove y axis ticks
-        axis.line.x = element_line(), # adjust x axis line
-        #axis.ticks.length.x = unit(.1, "cm"), # adjust tick length
-        #panel.grid.major.x = element_blank(), # remove major x lines
-        panel.grid.minor.x = element_blank(), # remove minor x lines
-        panel.grid.minor.y = element_blank(),
-        plot.margin = margin(0, 10, 0, 10),
-        #legend.position = "none",
-        axis.text.x = element_text(size=8),
-        axis.text.y = element_text(size=8,
-                                   vjust = -.5,
-                                   hjust = 0)) +
-  theme(axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11))) +
-  th +
-  # trick to move axis labels into plot!!
-  labs(title = "Urban poverty",
-       subtitle = "Urbanization rate and poverty rate, 2015",
-       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
-  theme(plot.title = element_text(face="bold",
-                                  size=12,
-                                  margin=margin(t=10, r=0, b=2, l=10, "pt")),
-        plot.subtitle = element_text(size=10,
-                                     margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        #plot.margin = unit(c(t=10,r=10,b=10,l=10), "pt"),
-        plot.caption = element_markdown(hjust = 0,
-                                        size = 6,
-                                        color="grey",
-                                        margin=margin(t=0,r=0,b=0,l=0, "pt")),
-        plot.caption.position = "plot",
-        axis.title = element_blank()) 
-
-f3
+# f3
 
 
 #### scatter plot ####
