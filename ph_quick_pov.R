@@ -722,11 +722,13 @@ f4 <- ggplot(data = df_urb_rur) +
   theme(axis.text.y = element_text(size = 8,
                                    colour = "#000000",
                                    vjust = .5,
-                                   hjust = 1)) +
+                                   hjust = 0)) +
   scale_y_discrete(limits = rev(region_factored)) +
   labs(title = "Urban/rural poverty",
        subtitle = "Poverty rate in urban and rural areas, 2021",
-       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+  theme(plot.title = element_text(hjust = -0.22),
+        plot.subtitle = element_text(hjust= -0.33))
 
 
 
