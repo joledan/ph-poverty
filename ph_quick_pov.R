@@ -645,3 +645,34 @@ f3
 # 
 # label <- c("Apayao", "Sulu", "Metropolitan Manila")
 
+##### look at incidence by region, urban v rural #####
+
+df_urban <- paste(dataraw,
+                  "1E3DB005.csv",
+                  sep = "/") %>%
+  read_delim(delim = ";",
+             skip = 2,
+             locale = locale(encoding = "windows-1252")) %>%
+  clean_names() %>%
+  rename_with(.fn = ~str_replace(., "estimate_percent", "urban_pov"),
+              .cols = starts_with("estimate")) %>%
+  mutate(geolocation = str_replace_all(geolocation, "[\\.\\?]|[¹²]", "") %>%
+           str_trim(),
+         across(starts_with("urban"), ~as.numeric(.))) %>%
+  replace_na(list(starts_with("urban") = 0))
+
+df_rural <- paste(dataraw,
+                  "1E3DB006.csv",
+                  sep = "/") %>%
+  read_delim(delim = ";",
+             skip = 2,
+             locale = locale(encoding = "windows-1252")) %>%
+  clean_names() %>%
+  rename_with(.fn = ~str_replace(., "estimate_percent", "rural_pov"),
+              .cols = starts_with("estimate")) %>%
+  mutate(geolocation = str_replace_all(geolocation, "[\\.\\?]|[¹²]", "") %>%
+           str_trim(),
+         across(starts_with("rural"), ~as.numeric(.)))
+
+df_urb_rur <- df_urban %>%
+  left_join(df_rural)
