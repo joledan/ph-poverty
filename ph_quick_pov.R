@@ -658,8 +658,7 @@ df_urban <- paste(dataraw,
               .cols = starts_with("estimate")) %>%
   mutate(geolocation = str_replace_all(geolocation, "[\\.\\?]|[¹²]", "") %>%
            str_trim(),
-         across(starts_with("urban"), ~as.numeric(.))) %>%
-  replace_na(list(starts_with("urban") = 0))
+         across(starts_with("urban"), ~as.numeric(.)))
 
 df_rural <- paste(dataraw,
                   "1E3DB006.csv",
@@ -674,5 +673,88 @@ df_rural <- paste(dataraw,
            str_trim(),
          across(starts_with("rural"), ~as.numeric(.)))
 
+# regions ordered
+region_factored <- c("PHILIPPINES", "NCR", "CAR",
+                     "Region I", "Region II",
+                     "Region III", "Region IV-A",
+                     "MIMAROPA", "Region V",
+                     "Region VI", "Region VII",
+                     "Region VIII", "Region IX",
+                     "Region X", "Region XI",
+                     "Region XII",
+                     "Caraga",
+                     "BARMM*")
+
 df_urb_rur <- df_urban %>%
-  left_join(df_rural)
+  left_join(df_rural) %>%
+  mutate(geolocation = case_when(
+    geolocation == "Region XII excluding Cotabato City" ~ "Region XII",
+    geolocation == "BARMM including Cotabato City" ~ "BARMM*",
+    T ~ geolocation
+  )) %>%
+  #select(geolocation) %>%
+  mutate(rural_pov_2021 = replace_na(rural_pov_2021, 0),
+         diff = rural_pov_2021-urban_pov_2021,
+         geolocation = fct_relevel(geolocation, region_factored))
+
+
+cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
+           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+#### dumbbell plot ####
+f4 <- ggplot(data = df_urb_rur) +
+  geom_point(aes(x = urban_pov_2021,
+                 y = geolocation), 
+             colour = "#0072B2",
+             alpha = 0.7,
+             size = 3) + 
+  geom_point(aes(x = rural_pov_2021,
+                 y = geolocation), 
+             colour = "#E69F00",
+             alpha = 0.7,
+             size = 3) + 
+  geom_segment(
+    aes(x = urban_pov_2021, xend = rural_pov_2021, y = geolocation, yend = geolocation),
+    col = 'grey60',
+    linewidth = 1
+  ) + 
+  th +
+  theme(axis.text.y = element_text(size = 8,
+                                   colour = "#000000",
+                                   vjust = .5,
+                                   hjust = 1)) +
+  scale_y_discrete(limits = rev(region_factored)) +
+  labs(title = "Urban/rural poverty",
+       subtitle = "Poverty rate in urban and rural areas, 2021",
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
+
+
+
+f4
+
+
+  # geom_text_repel(aes(label = NAME_1),
+  #                 color = "gray20",
+  #                 data = subset(df_urban1, NAME_1 %in% label),
+  #                 force = 5) +
+  # geom_smooth(aes(x = pct_urban_2020,
+  #                 y = poverty_incidence_2021,
+  #                 group = island_group,
+  #                 colour = island_group),
+  #             method = "lm", 
+  #             se = FALSE,
+  #             linetype = "dashed") +
+coord_cartesian(clip = "off") +
+  th +
+  scale_color_manual(values = highlights_line) +
+  scale_x_continuous(position = "bottom",
+                     expand = c(0,.1),
+                     limits = c(0, 66),
+                     breaks = seq(0, 60, 20)) +
+  scale_y_continuous(position = "right") +
+  theme(legend.position = "none") +
+  labs(title = "Urban poverty",
+       subtitle = "Urbanization rate and poverty rate by province, 2015",
+       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
+
+f3
