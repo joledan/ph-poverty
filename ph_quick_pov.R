@@ -150,8 +150,8 @@ df_pov <- paste(dataraw,
   filter(!is.na(annual_pc_threshold_2015)) %>%
   mutate(region_dummy = if_else(str_detect(geolocation, "Region|region|PHILIPPINES"), 1, 0),
          province_dummy = if_else(region_dummy == 0, 1, 0),
-         geolocation = str_replace_all(geolocation, c("[a-z]\\/" = "" ,"[0-9]\\/" = "" ,"[\\.\\,]" = "")),
-         geolocation = str_trim(geolocation),
+         geolocation = str_replace_all(geolocation, c("[a-z]\\/" = "" ,"[0-9]\\/" = "" ,"[\\.\\,]" = "")) %>%
+                                         str_trim(geolocation),
          region = if_else(region_dummy == 1, geolocation, NA),
          province = if_else(province_dummy == 1, geolocation, NA)) %>%
   fill(region, .direction = "down") %>%
@@ -646,7 +646,6 @@ f3
 # label <- c("Apayao", "Sulu", "Metropolitan Manila")
 
 ##### look at incidence by region, urban v rural #####
-
 df_urban <- paste(dataraw,
                   "1E3DB005.csv",
                   sep = "/") %>%
@@ -674,7 +673,7 @@ df_rural <- paste(dataraw,
          across(starts_with("rural"), ~as.numeric(.)))
 
 # regions ordered
-region_factored <- c("PHILIPPINES", "NCR", "CAR",
+region_factored <- c("CAR",
                      "Region I", "Region II",
                      "Region III", "Region IV-A",
                      "MIMAROPA", "Region V",
@@ -682,20 +681,46 @@ region_factored <- c("PHILIPPINES", "NCR", "CAR",
                      "Region VIII", "Region IX",
                      "Region X", "Region XI",
                      "Region XII",
-                     "Caraga",
-                     "BARMM*")
+                     "CARAGA",
+                     "BARMM")
+
+# luzon <- c("Region I", "Region II",
+#            "Region III", "Region IV-A",
+#            "MIMAROPA", "CAR",
+#            "Region V")
+# visayas <- c("Region VI", "Region VII", "Region VIII")
+# mindanao <- c("Region IX", "Region X",
+#               "Region XI", "Region XII",
+#               "CARAGA", 
+#               "BARMM")
+# 
+# highlights_line <- c("Luzon*"="#56B4E9",
+#                      "NCR" = "#E69F00",
+#                      "Visayas" = "#009E73",
+#                      "Mindanao" = "#CC79A7",
+#                      "Philippines" = "#999999")
+
 
 df_urb_rur <- df_urban %>%
   left_join(df_rural) %>%
   mutate(geolocation = case_when(
     geolocation == "Region XII excluding Cotabato City" ~ "Region XII",
-    geolocation == "BARMM including Cotabato City" ~ "BARMM*",
+    geolocation == "BARMM including Cotabato City" ~ "BARMM",
+    geolocation == "Caraga" ~ "CARAGA",
+    geolocation == "PHILIPPINES" ~ "Philippines",
     T ~ geolocation
   )) %>%
   #select(geolocation) %>%
-  mutate(rural_pov_2021 = replace_na(rural_pov_2021, 0),
-         diff = rural_pov_2021-urban_pov_2021,
-         geolocation = fct_relevel(geolocation, region_factored))
+  mutate(island_group = case_when(
+    geolocation %in% luzon ~ "Luzon",
+    geolocation %in% visayas ~"Visayas",
+    geolocation %in% mindanao ~ "Mindanao",
+    geolocation == "Philippines" ~ "Philippines",
+    geolocation == "NCR" ~ "NCR"),
+    # rural_pov_2021 = replace_na(rural_pov_2021, 0),
+    #      diff = rural_pov_2021-urban_pov_2021,
+         geolocation = fct_relevel(geolocation, region_factored)) %>%
+  filter(geolocation %notin% c("Philippines", "NCR"))
 
 
 cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
@@ -703,21 +728,37 @@ cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
 
 #### dumbbell plot ####
 f4 <- ggplot(data = df_urb_rur) +
+  geom_segment(
+    aes(x = urban_pov_2021,
+        xend = rural_pov_2021,
+        y = geolocation,
+        yend = geolocation),
+    col = 'grey60',
+    linewidth = 1
+  ) +
   geom_point(aes(x = urban_pov_2021,
                  y = geolocation), 
              colour = "#0072B2",
-             alpha = 0.7,
-             size = 3) + 
+             alpha = 1,
+             size = 2) + 
   geom_point(aes(x = rural_pov_2021,
                  y = geolocation), 
-             colour = "#E69F00",
-             alpha = 0.7,
-             size = 3) + 
-  geom_segment(
-    aes(x = urban_pov_2021, xend = rural_pov_2021, y = geolocation, yend = geolocation),
-    col = 'grey60',
-    linewidth = 1
-  ) + 
+             colour = "#D55E00",
+             alpha = 1,
+             size = 2) + 
+  scale_x_continuous(position = "top",
+                     expand = c(0,0),
+                     limits = c(0, 45),
+                     breaks = seq(0, 40, 10)) +
+  geom_vline(xintercept = 11.6,
+             colour = "#0072B2",
+             linetype = "dashed") +
+  geom_vline(xintercept = 25.7,
+             colour = "#D55E00",
+             linetype = "dashed") +
+  geom_vline(xintercept = 0,
+             colour = "#000000",
+             linewidth = .5) +
   th +
   theme(axis.text.y = element_text(size = 8,
                                    colour = "#000000",
@@ -725,10 +766,15 @@ f4 <- ggplot(data = df_urb_rur) +
                                    hjust = 0)) +
   scale_y_discrete(limits = rev(region_factored)) +
   labs(title = "Urban/rural poverty",
-       subtitle = "Poverty rate in urban and rural areas, 2021",
+       subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021",
        caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
-  theme(plot.title = element_text(hjust = -0.22),
-        plot.subtitle = element_text(hjust= -0.33))
+  theme(plot.subtitle = element_markdown(),
+        plot.title.position = "plot",
+        panel.grid.major.x = element_line(colour = "lightgrey"), # remove major x lines
+        axis.line.x = element_line(colour = "lightgrey"),
+        axis.ticks.x = element_line(colour="lightgrey")
+        # adjust x axis line
+  )
 
 
 
