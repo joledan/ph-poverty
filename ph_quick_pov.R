@@ -151,7 +151,7 @@ df_pov <- paste(dataraw,
   mutate(region_dummy = if_else(str_detect(geolocation, "Region|region|PHILIPPINES"), 1, 0),
          province_dummy = if_else(region_dummy == 0, 1, 0),
          geolocation = str_replace_all(geolocation, c("[a-z]\\/" = "" ,"[0-9]\\/" = "" ,"[\\.\\,]" = "")) %>%
-                                         str_trim(geolocation),
+                                         str_trim(),
          region = if_else(region_dummy == 1, geolocation, NA),
          province = if_else(province_dummy == 1, geolocation, NA)) %>%
   fill(region, .direction = "down") %>%
@@ -209,9 +209,9 @@ df_pov1 <- df_pov %>%
     str_detect(province, "District") ~ NA, 
     TRUE ~ NAME_1), 
     across(starts_with("poverty"), ~as.numeric(.))) %>%
-  filter(province_dummy == 1 | NAME_1 == "Metropolitan Manila") %>%
-  select(NAME_1, province, island_group, starts_with("incidence"), starts_with("poverty")) %>%
-  filter(!is.na(NAME_1), province %notin% c("Cotabato City", "Isabela City")) 
+  filter(province_dummy == 1 | NAME_1 == "Metropolitan Manila",
+         !is.na(NAME_1), province %notin% c("Cotabato City", "Isabela City")) %>%
+  select(NAME_1, province, island_group, starts_with("incidence"), starts_with("poverty"))
 # isabela city, cotabato city are in the PH data, but not in shapefile data
 # drop from data
 
@@ -226,9 +226,6 @@ df_pov_ph <- ph %>%
 
 # okabe-ito
 # palette.colors(palette = "Okabe-Ito")
-cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
-           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
 highlights <- c("Luzon"="#56B4E9",
                 "NCR" = "#E69F00",
                 "Visayas" = "#009E73",
@@ -282,7 +279,7 @@ df_pov_f2 <- paste(dataraw,
          year = as.numeric(str_replace(year, "p", ""))) %>%
   filter(major_island_group != "Luzon") %>%
   mutate(major_island_group = case_when(
-    major_island_group == "Rest of Luzon" ~ "Luzon*",
+    major_island_group == "Rest of Luzon" ~ "Luzon",
     major_island_group == "PHILIPPINES" ~ str_to_title(major_island_group),
     T ~ major_island_group 
   ))
@@ -353,7 +350,7 @@ f2 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
     subtitle = "Average poverty rate by region, 2015-2021 %",
-    caption = "NCR = National Capital Region <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
+    caption = "NCR = National Capital Region. Poverty rate in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
     theme = th)
 
 f2
@@ -461,8 +458,8 @@ f4 <- ggplot(data = df_urb_rur) +
                                    hjust = 0)) +
   scale_y_discrete(limits = rev(region_factored)) +
   labs(title = "On the wrong side",
-       subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021",
-       caption = "NCR has no rural areas. \\* indicates averages for the whole country <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+       subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021 %",
+       caption = "NCR has no rural areas. Poverty rates in percentage points.\\* indicates averages for the whole country <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
   theme(plot.subtitle = element_markdown(),
         plot.caption = element_markdown(),
         plot.title.position = "plot",
