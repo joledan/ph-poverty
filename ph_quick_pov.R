@@ -673,7 +673,7 @@ df_rural <- paste(dataraw,
          across(starts_with("rural"), ~as.numeric(.)))
 
 # regions ordered
-region_factored <- c("CAR",
+region_factored <- c("NCR", "CAR",
                      "Region I", "Region II",
                      "Region III", "Region IV-A",
                      "MIMAROPA", "Region V",
@@ -720,7 +720,7 @@ df_urb_rur <- df_urban %>%
     # rural_pov_2021 = replace_na(rural_pov_2021, 0),
     #      diff = rural_pov_2021-urban_pov_2021,
          geolocation = fct_relevel(geolocation, region_factored)) %>%
-  filter(geolocation %notin% c("Philippines", "NCR"))
+  filter(geolocation %notin% c("Philippines"))
 
 
 cbf_1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
@@ -740,7 +740,8 @@ f4 <- ggplot(data = df_urb_rur) +
                  y = geolocation), 
              colour = "#0072B2",
              alpha = 1,
-             size = 2) + 
+             size = 2) +
+  guides(colour = guide_legend(label.position = "right")) + 
   geom_point(aes(x = rural_pov_2021,
                  y = geolocation), 
              colour = "#D55E00",
@@ -750,34 +751,52 @@ f4 <- ggplot(data = df_urb_rur) +
                      expand = c(0,0),
                      limits = c(0, 45),
                      breaks = seq(0, 40, 10)) +
-  geom_vline(xintercept = 11.6,
-             colour = "#0072B2",
-             linetype = "dashed") +
-  geom_vline(xintercept = 25.7,
-             colour = "#D55E00",
-             linetype = "dashed") +
-  geom_vline(xintercept = 0,
-             colour = "#000000",
-             linewidth = .5) +
+  geom_vline(aes(xintercept = 11.6),
+             linetype = "dashed",
+             colour = "#0072B2") +
+  geom_vline(aes(xintercept = 25.7),
+             linetype = "dashed",
+             colour = "#D55E00",) +
+  # geom_vline(xintercept = 0,
+  #            colour = "#000000",
+  #            linewidth = .5) +
   th +
   theme(axis.text.y = element_text(size = 8,
                                    colour = "#000000",
                                    vjust = .5,
                                    hjust = 0)) +
   scale_y_discrete(limits = rev(region_factored)) +
-  labs(title = "Urban/rural poverty",
+  labs(title = "On the wrong side",
        subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021",
-       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+       caption = "NCR has no rural areas. \\* indicates averages for the whole country <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
   theme(plot.subtitle = element_markdown(),
+        plot.caption = element_markdown(),
         plot.title.position = "plot",
         panel.grid.major.x = element_line(colour = "lightgrey"), # remove major x lines
         axis.line.x = element_line(colour = "lightgrey"),
-        axis.ticks.x = element_line(colour="lightgrey")
-        # adjust x axis line
-  )
-
-
-
+        axis.ticks.x = element_line(colour="lightgrey"),
+        axis.ticks.length.x = unit(0, "pt"), # define tick length and colour for x-axis
+        axis.line.y = element_line(colour = 'black', size=0.5, linetype='solid')) +
+        # adjust x axis line 
+  annotate(geom = "label",
+           label = "Rural average*",
+           hjust = 0,
+           x = 26,
+           y = "NCR",
+           size = 8/.pt,
+           label.size = NA,
+           fill = "white",
+           family= "Noto Sans") +
+  annotate(geom = "label",
+           label = "Urban average*",
+           hjust = 0,
+           x = 3,
+           y = "BARMM",
+           size = 8/.pt,
+           label.size = NA,
+           fill = "white",
+           family= "Noto Sans") 
+  
 f4
 
 
@@ -792,17 +811,17 @@ f4
   #             method = "lm", 
   #             se = FALSE,
   #             linetype = "dashed") +
-coord_cartesian(clip = "off") +
-  th +
-  scale_color_manual(values = highlights_line) +
-  scale_x_continuous(position = "bottom",
-                     expand = c(0,.1),
-                     limits = c(0, 66),
-                     breaks = seq(0, 60, 20)) +
-  scale_y_continuous(position = "right") +
-  theme(legend.position = "none") +
-  labs(title = "Urban poverty",
-       subtitle = "Urbanization rate and poverty rate by province, 2015",
-       caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
-
-f3
+# coord_cartesian(clip = "off") +
+#   th +
+#   scale_color_manual(values = highlights_line) +
+#   scale_x_continuous(position = "bottom",
+#                      expand = c(0,.1),
+#                      limits = c(0, 66),
+#                      breaks = seq(0, 60, 20)) +
+#   scale_y_continuous(position = "right") +
+#   theme(legend.position = "none") +
+#   labs(title = "Urban poverty",
+#        subtitle = "Urbanization rate and poverty rate by province, 2015",
+#        caption = "**Source:** Philippine Statistics Authority • **Visual:** Jan Oledan")
+# 
+# f3
