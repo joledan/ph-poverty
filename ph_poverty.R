@@ -394,6 +394,12 @@ region_factored <- c("NCR", "CAR",
                      "CARAGA",
                      "BARMM")
 
+# read poverty incidence (%) and subsistence incidence files
+# define island groups
+luzon <- c("CAR", "Region I", "Region II", "Region III", "Region IV-A", "MIMAROPA", "Region V")
+visayas <- c("Region VI", "Region VII", "Region VIII")
+mindanao <- c("Region IX", "Region X", "Region XI", "Region XII", "CARAGA", "BARMM")
+
 # prepare data for urban/rural plot
 df_urb_rur <- df_urban %>%
   left_join(df_rural) %>%
@@ -410,10 +416,9 @@ df_urb_rur <- df_urban %>%
     geolocation %in% visayas ~"Visayas",
     geolocation %in% mindanao ~ "Mindanao",
     geolocation == "Philippines" ~ "Philippines",
-    geolocation == "NCR" ~ "NCR"),
-    # rural_pov_2021 = replace_na(rural_pov_2021, 0),
-    #      diff = rural_pov_2021-urban_pov_2021,
-         geolocation = fct_relevel(geolocation, region_factored)) %>%
+    geolocation == "NCR" ~ "Luzon"),
+  geolocation = fct_relevel(geolocation, rev(region_factored)),
+  island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon")))) %>%
   filter(geolocation %notin% c("Philippines"))
 
 
@@ -433,10 +438,10 @@ f2 <- ggplot(data = df_urb_rur) +
              alpha = 1,
              size = 2) +
   geom_point(aes(x = rural_pov_2021,
-                 y = geolocation), 
+                 y = geolocation),
              colour = "#D55E00",
              alpha = 1,
-             size = 2) + 
+             size = 2) +
   scale_x_continuous(position = "top",
                      expand = c(0,0),
                      limits = c(0, 45),
@@ -450,38 +455,28 @@ f2 <- ggplot(data = df_urb_rur) +
   theme(axis.text.y = element_text(size = 8,
                                    colour = "#000000",
                                    vjust = .5,
-                                   hjust = 0)) +
-  scale_y_discrete(limits = rev(region_factored)) +
+                                   hjust = 1)) +
+  facet_grid(rows = vars(island_group),
+             scales = "free_y",
+             space = "free_y",
+             switch = "y") + # Let the x axis vary across facets.
+  theme(strip.text.y.left = element_text(angle = 0, 
+                                         vjust = 1,
+                                         hjust = 0,
+                                         margin=margin(t=3,b=0,l=0,r=0)),
+        strip.placement = "outside") +
   labs(title = "On the wrong side",
        subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021 %",
        caption = "NCR has no rural areas. \\* indicates averages for the whole country. Poverty rates in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
-  theme(plot.subtitle = element_markdown(),
+  theme(panel.spacing = unit(0,'pt'),
+        plot.subtitle = element_markdown(),
         plot.caption = element_markdown(),
         plot.title.position = "plot",
         panel.grid.major.x = element_line(colour = "grey90"), # remove major x lines
         axis.line.x = element_line(colour = "grey90"),
         axis.ticks.x = element_line(colour="grey90"),
         axis.ticks.length.x = unit(0, "pt"), # define tick length and colour for x-axis
-        axis.line.y = element_line(colour = 'black', linewidth=0.5, linetype='solid')) +
-        # adjust x axis line 
-  annotate(geom = "label",
-           label = "Rural average*",
-           hjust = 0,
-           x = 26,
-           y = "NCR",
-           size = 8/.pt,
-           label.size = NA,
-           fill = "white",
-           family= "Noto Sans") +
-  annotate(geom = "label",
-           label = "Urban average*",
-           hjust = 0,
-           x = 3,
-           y = "BARMM",
-           size = 8/.pt,
-           label.size = NA,
-           fill = "white",
-           family= "Noto Sans") 
+        axis.line.y = element_line(colour = 'black', linewidth=0.5, linetype='solid'))
 
 # make plot
 f2
