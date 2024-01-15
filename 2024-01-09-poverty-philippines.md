@@ -17,22 +17,21 @@ thumbnail: ""
 The Philippines, home to over 7,600 islands and a growing population of 113 million, has poverty reduction on its mind. President Ferdinand Marcos Jr hopes to decrease the country's poverty rate to 9% by the end of his term in 2028 through a mix of economic assistance and social development programs targetting the country's poorest populations. In 2021, the year of the most recent official data, the current poverty rate of the country stands at 18.1%. With four years to go to achieve this goal [continue here] 
 
 <!-- average poverty rate by region -->
-The Philippines is split into three major island groups from north to south: Luzon, Visayas, and Mindanao. The National Capital Region (NCR) contains the capital Manila along with 16 other cities and municipalities. The poverty rate is defined as the share of poor Filipinos whose income per person is insufficient to meet their basic needs. Average poverty rate by region follows the reverse pattern from top to bottom; Mindanao records the highest poverty rate, followed by Visayas, Luzon (excluding the NCR), with the NCR boasting the lowest poverty rate. The average for the entire country cuts through the middle (see chart).
+The Philippines is split into three major island groups from north to south: Luzon, Visayas, and Mindanao. The National Capital Region (NCR) contains the capital Manila and 16 other cities and municipalities. The poverty rate is defined as the share of poor Filipinos whose income per person is insufficient to meet their basic needs. Average poverty rate by major island group follows the reverse pattern from top to bottom; Mindanao records the highest poverty rate, followed by Visayas, Luzon (excluding the NCR), with the NCR boasting the lowest poverty rate. The average for the entire country cuts through the middle (see chart).
 
-Mindanao's poverty rate, on average, consistently decreased over the three years of data. The remaining regions follow a similar decrease in poverty rates but only from 2015 to 2018, as they increased going into 2021. Policy makers attribute this increase to the economic shutdown caused by the 2020 COVID-19 pandemic. Estimates suggest that [x] amount of Filipinos were pushed into poverty as a result. 
-Over the three years of data, the order remains the same from top to bottom. 
+From 2015 to 2018, all major island groups recorded decreases in poverty rates. The impact of the 2020 COVID-19 pandemic resulted in increased poverty rates in the country as a whole and in Luzon, Visayas, and the NCR, from 2018 to 2021 (see chart). Mindanao is the only island group that saw a constant decrease in poverty over the three years of data. However it still records the highest poverty rate among the major island groups in the country and the order has not changed over time. 
+
+<!-- describe mindanao if needed?
+or why mindanao has decreased over time  -->
 
 <!-- urban/rural poverty -->
-At the regional level, differences in poverty rates between urban and rural areas are stark. In 2021, rural poverty exceeds urban poverty rates in 15 of the 17 regions. 
+At the regional level, stark differences are reflected between urban and rural areas. In 2021, rural poverty exceeds urban poverty rates in 15 of the 17 regions. Among the 17 regions, only 4 have urban poverty rates below the national average - all based in Luzon. 
 
- 
-Regions in Luzon close to the NCR, the economic centre of the country, 
-Luzon, the economic centre of the country, 
-Visayas and Mindano, the island groups who
-The majority of regions in Visayas and Mindanao have large differences between urban and rural poverty rates (see Region IX). 
+Across regions in Visayas and Mindanao urban poverty rates exceed the national average and only one region (Region VI) records a rural poverty rate below the national average. 
 
-Among the 17 regions, only 3 have urban poverty rates below the national average. Rural poverty rates in Visayas and Midnanao exceed the national average. 
+All regions in Visayas and Mindanao record urban poverty rates above the national value while 8 of the 9 regions between the two island groups record rural poverty rates 
 
+<!-- need to conclude on poverty programs and where to go -->
 
 [next plot to make?]
 [why is Mindanao's poverty rate high relative to the other regions?]
