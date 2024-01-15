@@ -22,16 +22,18 @@ The Philippines is split into three major island groups from north to south: Luz
 Mindanao's poverty rate, on average, consistently decreased over the three years of data. The remaining regions follow a similar decrease in poverty rates but only from 2015 to 2018, as they increased going into 2021. Policy makers attribute this increase to the economic shutdown caused by the 2020 COVID-19 pandemic. Estimates suggest that [x] amount of Filipinos were pushed into poverty as a result. 
 Over the three years of data, the order remains the same from top to bottom. 
 
-<!-- province level poverty --> 
-At the provincial level, a handful of provinces saw large reductions in poverty rates between 2015 and 2021. 
-In Luzon, provinces in the CAR saw the largest percentage point reductions in poverty rates.
-All provinces in Mainland Mindanao saw decreased poverty rates
-Few provinces saw increases in poverty rates from 2015 to 2021.  
-
-<!-- reasons for poverty -->
-Natural disasters are one of the main challenges to poverty reduction. 
-
 <!-- urban/rural poverty -->
+At the regional level, differences in poverty rates between urban and rural areas are stark. In 2021, rural poverty exceeds urban poverty rates in 15 of the 17 regions. 
+
+ 
+Regions in Luzon close to the NCR, the economic centre of the country, 
+Luzon, the economic centre of the country, 
+Visayas and Mindano, the island groups who
+The majority of regions in Visayas and Mindanao have large differences between urban and rural poverty rates (see Region IX). 
+
+Among the 17 regions, only 3 have urban poverty rates below the national average. Rural poverty rates in Visayas and Midnanao exceed the national average. 
+
+
 [next plot to make?]
 [why is Mindanao's poverty rate high relative to the other regions?]
 [is it urban/rural differences?]
