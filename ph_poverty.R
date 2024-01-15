@@ -387,8 +387,10 @@ region_factored <- c("NCR", "CAR",
                      "Region I", "Region II",
                      "Region III", "Region IV-A",
                      "MIMAROPA", "Region V",
-                     "Region VI", "Region VII",
-                     "Region VIII", "Region IX",
+                     "Region VI",
+                     "Region VII", 
+                     "Region VIII",  
+                     "Region IX",
                      "Region X", "Region XI",
                      "Region XII",
                      "CARAGA",
@@ -410,7 +412,7 @@ df_urb_rur <- df_urban %>%
     geolocation == "PHILIPPINES" ~ "Philippines",
     T ~ geolocation
   )) %>%
-  #select(geolocation) %>%
+  filter(geolocation != "Philippines") %>%
   mutate(island_group = case_when(
     geolocation %in% luzon ~ "Luzon",
     geolocation %in% visayas ~"Visayas",
@@ -418,8 +420,14 @@ df_urb_rur <- df_urban %>%
     geolocation == "Philippines" ~ "Philippines",
     geolocation == "NCR" ~ "Luzon"),
   geolocation = fct_relevel(geolocation, rev(region_factored)),
-  island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon")))) %>%
-  filter(geolocation %notin% c("Philippines"))
+  island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon"))))
+
+# make small df for annotations
+df_annos <- data.frame(island_group = c("Luzon", "Visayas", "Mindanao"), 
+                       x = c(30.5, NA, 6.5),
+                       y = c("NCR", "Region VI", "BARMM"),
+                       label = c("Rural average*", NA, "Urban average*")) %>%
+  mutate(island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon"))))
 
 
 ##### plot 2 - regional urban, rural poverty, dumbbell plot #####
@@ -451,18 +459,26 @@ f2 <- ggplot(data = df_urb_rur) +
              colour = "#0072B2") +
   geom_vline(aes(xintercept = 25.7),
              linetype = "dashed",
-             colour = "#D55E00",) +
-  theme(axis.text.y = element_text(size = 8,
-                                   colour = "#000000",
-                                   vjust = .5,
-                                   hjust = 1)) +
+             colour = "#D55E00") +
   facet_grid(rows = vars(island_group),
              scales = "free_y",
              space = "free_y",
              switch = "y") + # Let the x axis vary across facets.
+  geom_label(aes(label = label,
+                 x = x, y = y),
+             fill = "#FFFFFF",
+             data = df_annos,
+             size = 8/.pt,
+             label.size = NA,
+             family = "Noto Sans") +
+  theme(axis.text.y = element_text(size = 8,
+                                   colour = "#000000",
+                                   vjust = .5,
+                                   hjust = 1)) +
   theme(strip.text.y.left = element_text(angle = 0, 
                                          vjust = 1,
                                          hjust = 0,
+                                         size = unit(8, "pt"),
                                          margin=margin(t=3,b=0,l=0,r=0)),
         strip.placement = "outside") +
   labs(title = "On the wrong side",
@@ -476,7 +492,7 @@ f2 <- ggplot(data = df_urb_rur) +
         axis.line.x = element_line(colour = "grey90"),
         axis.ticks.x = element_line(colour="grey90"),
         axis.ticks.length.x = unit(0, "pt"), # define tick length and colour for x-axis
-        axis.line.y = element_line(colour = 'black', linewidth=0.5, linetype='solid'))
+        axis.line.y = element_line(colour = 'black', linewidth=0.5, linetype='solid')) 
 
 # make plot
 f2
