@@ -1,7 +1,7 @@
-# title: clean
-# date: december 2023
+# title: ph_poverty
+# date: january 2024
 # by: jan oledan
-# desc: 
+# desc: load data to construct figures for PH poverty write up
 
 ##### install and load packages #####
 rm(list=ls())
@@ -49,7 +49,6 @@ code <- paste(main, "ph-quick/code", sep = "/")
 ##### theme define main ggplot theme components #####
 th <- theme_minimal(base_family = "Noto Sans") + 
   theme(panel.border = element_blank(),
-        #plot.background = element_rect(fill = '#FFFFFF'),
         plot.margin = margin(t = 10, r = 10, b = 10, l = 10, unit = "pt"),
         plot.title = element_text(face = "bold", # plot title, subtitle, caption
                                   size = 12,
@@ -64,7 +63,7 @@ th <- theme_minimal(base_family = "Noto Sans") +
   theme(axis.title = element_blank(),
         axis.title.x = element_blank(), # adjust x axis title
         axis.title.y = element_blank(), # adjust y axis title
-        axis.text.x = element_text(size = 8, # make axis text (labels) size 8, black font
+        axis.text.x = element_text(size = 8, # make axis text (labels) size 8
                                    colour = "#000000"),
         axis.text.y = element_text(size = 8,
                                    colour = "#000000",
@@ -77,7 +76,7 @@ th <- theme_minimal(base_family = "Noto Sans") +
         panel.grid.major.x = element_blank(), # remove major x lines
         panel.grid.minor.x = element_blank(), # remove minor x lines
         panel.grid.minor.y = element_blank(),
-        axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length) )
+        axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length to go on top of line
 
 
 #### intialize camcorder to set up and output plots ####
@@ -93,7 +92,8 @@ camcorder::gg_record(
 )
 
 
-##### plot 1 - province level poverty read data #####
+##### data for plot 1 - island group level poverty data #####
+#### map and line chart ####
 # read admin1 ph data
 ph <- as_sf(gadm(country = "PHL",
                  level = 1,
@@ -217,26 +217,46 @@ df_pov1 <- df_pov %>%
 
 # merge with shapefile
 df_pov_ph <- ph %>%
-  mutate(in_ph = 1) %>%
-  mutate(NAME_1 = case_when(
-    NAME_1 == "Compostela Valley" ~ "Davao de Oro",
-    TRUE ~ NAME_1)) %>%
+  mutate(in_ph = 1, # adjust naming to merge properly
+         NAME_1 = case_when(
+           NAME_1 == "Compostela Valley" ~ "Davao de Oro",
+           TRUE ~ NAME_1)) %>%
   full_join(df_pov1)
 
+# remove from environment to clear space
+rm(df_pov, df_pov1, ph, places, pov_incidence_string)
 
-# okabe-ito
-# palette.colors(palette = "Okabe-Ito")
+# prepare island group df for plot
+df_island_group <- df_pov_ph %>%
+  group_by(island_group) %>%
+  summarise()
+
+# prepare line chart data
+df_pov_f2 <- paste(dataraw,
+                   "1E3DF130.csv",
+                   sep = "/") %>%
+  read_delim(delim=";",
+             skip = 2) %>%
+  clean_names() %>%
+  rename(incidence_families = poverty_incidence_among_families_percent,
+         incidence_popn = poverty_incidence_among_population_percent) %>%
+  mutate(major_island_group = str_replace(major_island_group, "\\*", ""),
+         year = as.numeric(str_replace(year, "p", ""))) %>%
+  filter(major_island_group != "Luzon") %>% # rename Rest of Luzon as Luzon
+  mutate(major_island_group = case_when(
+    major_island_group == "Rest of Luzon" ~ "Luzon",
+    major_island_group == "PHILIPPINES" ~ str_to_title(major_island_group),
+    T ~ major_island_group 
+  ))
+
+
+##### plot 1 - map and line chart #####
+# define colours
 highlights <- c("Luzon"="#56B4E9",
                 "NCR" = "#E69F00",
                 "Visayas" = "#009E73",
                 "Mindanao" = "#CC79A7")
 
-# prepare island group df
-df_island_group <- df_pov_ph %>%
-  group_by(island_group) %>%
-  summarise()
-
-##### map by major island group #####
 # label NCR in yellow 
 # plot - geography
 f2pa <- ggplot(data = df_island_group) + 
@@ -244,10 +264,6 @@ f2pa <- ggplot(data = df_island_group) +
   geom_sf(aes(fill = island_group),
           color="#FFFFFF",
           linewidth = 0.1) +
-  # geom_sf(data = places,
-  #         aes(fill = NAME),
-  #         color="#E69F00",
-  #         shape=18) +
   scale_fill_manual(values = highlights) +
   coord_sf(datum = NA,
            xlim = c(-200000, 1000000),
@@ -264,27 +280,8 @@ f2pa <- ggplot(data = df_island_group) +
            fontface = "bold",
            size = 6/.pt)
 
-f2pa
 
-##### plot 2 - poverty by major island group #####
-df_pov_f2 <- paste(dataraw,
-                   "1E3DF130.csv",
-                   sep = "/") %>%
-  read_delim(delim=";",
-             skip = 2) %>%
-  clean_names() %>%
-  rename(incidence_families = poverty_incidence_among_families_percent,
-         incidence_popn = poverty_incidence_among_population_percent) %>%
-  mutate(major_island_group = str_replace(major_island_group, "\\*", ""),
-         year = as.numeric(str_replace(year, "p", ""))) %>%
-  filter(major_island_group != "Luzon") %>%
-  mutate(major_island_group = case_when(
-    major_island_group == "Rest of Luzon" ~ "Luzon",
-    major_island_group == "PHILIPPINES" ~ str_to_title(major_island_group),
-    T ~ major_island_group 
-  ))
-
-
+# highlights for line plot
 highlights_line <- c("Luzon"="#56B4E9",
                      "NCR" = "#E69F00",
                      "Visayas" = "#009E73",
@@ -343,20 +340,22 @@ f2pb <- ggplot(data = df_pov_f2,
     colour = "#999999"
   )
 
-f2pb
+# view individual plots if you want
+#f2pa
+#f2pb
 
 # need an arrow and  text 
-f2 <- f2pa + f2pb +
+f1 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
     subtitle = "Average poverty rate by region, 2015-2021 %",
-    caption = "NCR = National Capital Region. Poverty rate in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
+    caption = "NCR = National Capital Region. Luzon values exclude the NCR. Poverty rate in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
     theme = th)
 
-f2
+# write out plot
+f1
 
-
-##### look at incidence by region, urban v rural #####
+##### data for plot 2 - regional poverty, urban v rural ####
 df_urban <- paste(dataraw,
                   "1E3DB005.csv",
                   sep = "/") %>%
@@ -395,6 +394,7 @@ region_factored <- c("NCR", "CAR",
                      "CARAGA",
                      "BARMM")
 
+# prepare data for urban/rural plot
 df_urb_rur <- df_urban %>%
   left_join(df_rural) %>%
   mutate(geolocation = case_when(
@@ -417,22 +417,21 @@ df_urb_rur <- df_urban %>%
   filter(geolocation %notin% c("Philippines"))
 
 
-#### dumbbell plot ####
-f4 <- ggplot(data = df_urb_rur) +
+##### plot 2 - regional urban, rural poverty, dumbbell plot #####
+f2 <- ggplot(data = df_urb_rur) +
+  th +
   geom_segment(
     aes(x = urban_pov_2021,
         xend = rural_pov_2021,
         y = geolocation,
         yend = geolocation),
     col = 'grey60',
-    linewidth = 1
-  ) +
+    linewidth = 1) +
   geom_point(aes(x = urban_pov_2021,
                  y = geolocation), 
              colour = "#0072B2",
              alpha = 1,
              size = 2) +
-  guides(colour = guide_legend(label.position = "right")) + 
   geom_point(aes(x = rural_pov_2021,
                  y = geolocation), 
              colour = "#D55E00",
@@ -448,10 +447,6 @@ f4 <- ggplot(data = df_urb_rur) +
   geom_vline(aes(xintercept = 25.7),
              linetype = "dashed",
              colour = "#D55E00",) +
-  # geom_vline(xintercept = 0,
-  #            colour = "#000000",
-  #            linewidth = .5) +
-  th +
   theme(axis.text.y = element_text(size = 8,
                                    colour = "#000000",
                                    vjust = .5,
@@ -459,15 +454,15 @@ f4 <- ggplot(data = df_urb_rur) +
   scale_y_discrete(limits = rev(region_factored)) +
   labs(title = "On the wrong side",
        subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021 %",
-       caption = "NCR has no rural areas. Poverty rates in percentage points.\\* indicates averages for the whole country <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+       caption = "NCR has no rural areas. \\* indicates averages for the whole country. Poverty rates in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
   theme(plot.subtitle = element_markdown(),
         plot.caption = element_markdown(),
         plot.title.position = "plot",
-        panel.grid.major.x = element_line(colour = "lightgrey"), # remove major x lines
-        axis.line.x = element_line(colour = "lightgrey"),
-        axis.ticks.x = element_line(colour="lightgrey"),
+        panel.grid.major.x = element_line(colour = "grey90"), # remove major x lines
+        axis.line.x = element_line(colour = "grey90"),
+        axis.ticks.x = element_line(colour="grey90"),
         axis.ticks.length.x = unit(0, "pt"), # define tick length and colour for x-axis
-        axis.line.y = element_line(colour = 'black', size=0.5, linetype='solid')) +
+        axis.line.y = element_line(colour = 'black', linewidth=0.5, linetype='solid')) +
         # adjust x axis line 
   annotate(geom = "label",
            label = "Rural average*",
@@ -487,6 +482,10 @@ f4 <- ggplot(data = df_urb_rur) +
            label.size = NA,
            fill = "white",
            family= "Noto Sans") 
-  
-f4
 
+# make plot
+f2
+
+gg_stop_recording()
+
+### end of code ###
