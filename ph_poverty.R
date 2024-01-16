@@ -11,7 +11,7 @@ packages <- c("sf","tidyverse", "ggrepel", "devtools",
               "patchwork", "lubridate", "ragg",
               "camcorder", "devtools", "geodata", "reticulate",
               "tidyterra", "janitor", "rnaturalearth",
-              "ggtext")
+              "ggtext", "wbstats")
 
 # install packages not yet installed
 install_package <- packages %in% rownames(installed.packages())
@@ -79,7 +79,66 @@ th <- theme_minimal(base_family = "Noto Sans") +
         axis.text.y.right = element_text(margin = margin(t = 0, r = 0, b = 0, l = -11, unit = "pt"))) # adjust tick length to go on top of line
 
 
-#### intialize camcorder to set up and output plots ####
+
+##### plot 1 - comparing national poverty rates #####
+### intialize camcorder to set up and output square plot ###
+camcorder::gg_record(
+  dir = plots,
+  device = "png",
+  scale = 1,
+  width = 3.5,
+  height = 3.5,
+  units = "in",
+  dpi = 300,
+  bg = "white"
+)
+
+
+df_wb_pov <- wb_data("SI.POV.NAHC",
+                     country = c("Philippines", "Thailand", "Indonesia", "Vietnam", "Malaysia"),
+                     start_date = 2012, end_date = 2021) %>%
+  clean_names() %>%
+  filter(!is.na(si_pov_nahc))
+
+country_highlights <- c("Indonesia"="#56B4E9",
+                        "Philippines" = "#0072B2",
+                        "Viet Nam" = "#D55E00",
+                        "Thailand" = "#E69F00")
+
+# line plot - overtime, major island groups, geography
+f1 <- ggplot(data = df_wb_pov,
+                aes(x = date, 
+                    y = si_pov_nahc,
+                    color = country)) +
+  th +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = country_highlights) +
+  scale_x_continuous(position = "bottom",
+                     breaks = c(2012, 2015, 2018, 2021),
+                     limits = c(2012, 2021.5),
+                     expand = c(.05,0)) +
+  scale_y_continuous(position = "right",
+                     breaks = c(0, 10, 20, 30),
+                     limits = c(0, 30),
+                     expand = c(0, 0)) +
+  theme(legend.position = "none") +
+  annotate(geom = "text", 
+           x = c(2014, 2013, 2019, 2013), 
+           y = c(13, 26, 4, 7), 
+           label = c("Indonesia", "Philippines", "Vietnam", "Thailand"),
+           hjust = 0,
+           colour = c("#56B4E9", "#0072B2", "#D55E00","#E69F00"),
+           family = "Noto Sans",
+           fontface = "bold",
+           size = 8/.pt) +
+  labs(title = "Slow progress",
+       subtitle = "Population living in poverty*, 2012-2021 %",
+       caption = "*Based on national poverty rates <br> **Source:** World Bank • **Visual:** Jan Oledan")
+
+f1
+
+
+#### intialize camcorder to set up remaining plots ####
 camcorder::gg_record(
   dir = plots,
   device = "png",
@@ -92,7 +151,8 @@ camcorder::gg_record(
 )
 
 
-##### data for plot 1 - island group level poverty data #####
+##### data for plot 2 - island group level poverty data #####
+
 #### map and line chart ####
 # read admin1 ph data
 ph <- as_sf(gadm(country = "PHL",
@@ -250,7 +310,7 @@ df_pov_f2 <- paste(dataraw,
   ))
 
 
-##### plot 1 - map and line chart #####
+##### plot 2 - map and line chart #####
 # define colours
 highlights <- c("Luzon"="#56B4E9",
                 "NCR" = "#E69F00",
@@ -295,8 +355,8 @@ f2pb <- ggplot(data = df_pov_f2,
                    color = major_island_group, 
                    group = major_island_group)) +
   th +
-  geom_line(linewidth = 0.5) +
-  geom_point(size = 1) +
+  geom_line(linewidth = 1) +
+  #geom_point(size = 1) +
   coord_cartesian(clip = "off") +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom", 
@@ -306,9 +366,8 @@ f2pb <- ggplot(data = df_pov_f2,
   scale_y_continuous(position = "right",
                      breaks = c(0, 10, 20, 30, 40),
                      limits = c(0, 40),
-                     expand = c(0, 0)) +
-  theme(legend.position = "none",
-        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")) +
+                     expand = c(.05, 0)) +
+  theme(legend.position = "none") +
   annotate(geom = "text",
            x = c(2015.8),
            y = c(19),
@@ -345,15 +404,15 @@ f2pb <- ggplot(data = df_pov_f2,
 #f2pb
 
 # need an arrow and  text 
-f1 <- f2pa + f2pb +
+f2 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
-    subtitle = "Average poverty rate by region, 2015-2021 %",
-    caption = "NCR = National Capital Region. Luzon values exclude the NCR. Poverty rate in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
+    subtitle = "Poverty rate by major island group*, 2015-2021 %",
+    caption = "NCR = National Capital Region. Luzon values exclude the NCR. *Based on national poverty rates. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
     theme = th)
 
 # write out plot
-f1
+f2
 
 ##### data for plot 2 - regional poverty, urban v rural ####
 df_urban <- paste(dataraw,
@@ -430,8 +489,8 @@ df_annos <- data.frame(island_group = c("Luzon", "Visayas", "Mindanao"),
   mutate(island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon"))))
 
 
-##### plot 2 - regional urban, rural poverty, dumbbell plot #####
-f2 <- ggplot(data = df_urb_rur) +
+##### plot 3 - regional urban, rural poverty, dumbbell plot #####
+f3 <- ggplot(data = df_urb_rur) +
   th +
   geom_segment(
     aes(x = urban_pov_2021,
@@ -495,8 +554,9 @@ f2 <- ggplot(data = df_urb_rur) +
         axis.line.y = element_line(colour = 'black', linewidth=0.5, linetype='solid')) 
 
 # make plot
-f2
+f3
 
-gg_stop_recording()
+#gg_stop_recording()
+
 
 ### end of code ###
