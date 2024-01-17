@@ -80,7 +80,6 @@ th <- theme_minimal(base_family = "Noto Sans") +
 
 
 
-##### plot 1 - comparing national poverty rates #####
 ### intialize camcorder to set up and output square plot ###
 camcorder::gg_record(
   dir = plots,
@@ -93,9 +92,9 @@ camcorder::gg_record(
   bg = "white"
 )
 
-
+##### plot 1 - comparing national poverty rates #####
 df_wb_pov <- wb_data("SI.POV.NAHC",
-                     country = c("Philippines", "Thailand", "Indonesia", "Vietnam", "Malaysia"),
+                     country = c("Philippines", "Thailand", "Indonesia", "Vietnam"),
                      start_date = 2012, end_date = 2021) %>%
   clean_names() %>%
   filter(!is.na(si_pov_nahc))
@@ -150,9 +149,7 @@ camcorder::gg_record(
   bg = "white"
 )
 
-
-##### data for plot 2 - island group level poverty data #####
-
+##### data for plot 2: island group level poverty data #####
 #### map and line chart ####
 # read admin1 ph data
 ph <- as_sf(gadm(country = "PHL",
@@ -161,57 +158,33 @@ ph <- as_sf(gadm(country = "PHL",
   st_transform(crs="EPSG:32651") %>%
   select(NAME_1, geometry)
 
-# load places from Natural Earth, keep 3 major cities in the Ph
-places <- ne_download(
-  scale = "large",
-  type = "populated_places",
-  category = "cultural",
-  load = T,
-  returnclass = "sf") %>%
-  filter(ADM0_A3 == "PHL") %>%
-  filter(NAME %in% c("Manila")) %>%
-  select(NAME, geometry) %>%
-  mutate(shape = case_when(
-    NAME == "Manila" ~ 18
-  ),
-  NAME = case_when(
-    NAME == "Manila" ~ "NCR"
-  ))
-
 # read poverty incidence (%) and subsistence incidence files
 # define island groups
 luzon <- c("Region I (Ilocos Region)", "Region II (Cagayan Valley)",
            "Region III (Central Luzon)", "Region IV-A (CALABARZON)",
            "MIMAROPA Region", "Cordillera Administrative Region (CAR)",
            "Region V (Bicol Region)")
-visayas <- c("Region VI (Western Visayas)", "Region VII (Central Visayas)", "Region VIII (Eastern Visayas)")
+visayas <- c("Region VI (Western Visayas)", "Region VII (Central Visayas)", 
+             "Region VIII (Eastern Visayas)")
 mindanao <- c("Region IX (Zamboanga Peninsula)", "Region X (Northern Mindanao)",
               "Region XI (Davao Region)", "Region XII (SOCCSKSARGEN)",
               "Region XIII (Caraga)", 
               "Autonomous Region in Muslim Mindana Bangsamoro Autonomous Region in Muslim Mindanao (ARMM/BARMM)")
 
+# province level poverty data
+# need this to assign GIS data to regions
 # poverty incidence (rate) data
-df_pov <- paste(dataraw,
-                "1E3DF020.csv",
-                sep = "/") %>%
+df_regions <- paste(dataraw,
+                    "1E3DF020.csv",
+                    sep = "/") %>%
   read_delim(delim=";",
              skip = 2) %>%
   clean_names() %>%
-  rename_with(.fn = ~str_replace(.x, "2021p", "2021"),
-              .cols = ends_with("2021p")) %>%
-  rename_with(.fn = ~ paste0("poverty_incidence_", str_extract(., "(\\d+)$")), 
-              .cols = starts_with("poverty_incidence")) %>%
-  rename_with(.fn = ~ paste0("annual_pc_threshold_", str_extract(., "(\\d+)$")), 
-              .cols = starts_with("annual_per_capita_poverty_threshold"))  %>%
-  mutate(across(c(annual_pc_threshold_2015:poverty_incidence_2021), ~ as.numeric(.)),
-         incidence_pctpoint_2018_2021 = poverty_incidence_2021-poverty_incidence_2018,
-         incidence_pctpoint_2015_2021 = poverty_incidence_2021-poverty_incidence_2015,
-  ) %>%
-  filter(!is.na(annual_pc_threshold_2015)) %>%
+  select(geolocation) %>%
   mutate(region_dummy = if_else(str_detect(geolocation, "Region|region|PHILIPPINES"), 1, 0),
          province_dummy = if_else(region_dummy == 0, 1, 0),
          geolocation = str_replace_all(geolocation, c("[a-z]\\/" = "" ,"[0-9]\\/" = "" ,"[\\.\\,]" = "")) %>%
-                                         str_trim(),
+           str_trim(),
          region = if_else(region_dummy == 1, geolocation, NA),
          province = if_else(province_dummy == 1, geolocation, NA)) %>%
   fill(region, .direction = "down") %>%
@@ -220,11 +193,10 @@ df_pov <- paste(dataraw,
     region %in% luzon ~ "Luzon",
     region %in% visayas ~ "Visayas",
     region %in% mindanao ~ "Mindanao"
-  ))
+  )) %>%
+  filter(row_number() <= n()-4)
 
-
-
-#### match strings between the two data sets ####
+#### match strings between two data sets ####
 # tf-idf 
 # break up words into characters of different lengths,
 # match with other strings and show top 3 matches 
@@ -256,43 +228,72 @@ string_match <- function(from, to) {
 }
 
 # get results from string matching
-pov_incidence_string <- string_match(from = unique(df_pov$province),
+regions_string_matched <- string_match(from = unique(df_regions$province),
                                      to = unique(ph$NAME_1))
 
-# join with string matched province names 
-df_pov1 <- df_pov %>%
-  left_join(pov_incidence_string) %>%
+# merge province data from open stat PHL to string matched GADM data
+# make minor changes to match
+df_regions1 <- df_regions %>%
+  left_join(regions_string_matched) %>%
   select(-rank, -Similarity) %>%
   mutate(NAME_1 = case_when(
     region == "National Capital Region (NCR)" ~ "Metropolitan Manila",
     province == "Davao de Oro" ~ "Davao de Oro",
     str_detect(province, "District") ~ NA, 
-    TRUE ~ NAME_1), 
-    across(starts_with("poverty"), ~as.numeric(.))) %>%
+    TRUE ~ NAME_1)) %>%
   filter(province_dummy == 1 | NAME_1 == "Metropolitan Manila",
          !is.na(NAME_1), province %notin% c("Cotabato City", "Isabela City")) %>%
-  select(NAME_1, province, island_group, starts_with("incidence"), starts_with("poverty"))
-# isabela city, cotabato city are in the PH data, but not in shapefile data
-# drop from data
+  select(NAME_1, province, island_group)
 
-# merge with shapefile
-df_pov_ph <- ph %>%
+# merge with GADM shapefile
+df_ph_shp <- ph %>%
   mutate(in_ph = 1, # adjust naming to merge properly
          NAME_1 = case_when(
-           NAME_1 == "Compostela Valley" ~ "Davao de Oro",
-           TRUE ~ NAME_1)) %>%
-  full_join(df_pov1)
+         NAME_1 == "Compostela Valley" ~ "Davao de Oro",
+         TRUE ~ NAME_1)) %>%
+  full_join(df_regions1)
 
 # remove from environment to clear space
-rm(df_pov, df_pov1, ph, places, pov_incidence_string)
+rm(df_regions, df_regions1, ph, regions_string_matched)
 
 # prepare island group df for plot
-df_island_group <- df_pov_ph %>%
+df_island_group <- df_ph_shp %>%
   group_by(island_group) %>%
   summarise()
 
-# prepare line chart data
-df_pov_f2 <- paste(dataraw,
+##### data for plot 2: prepare line chart data ####
+##### 2006-2012 poverty incidence values
+# NCR values
+df_pov_ncr_06_12 <- paste(dataraw,
+                          "3D3DP020.csv",
+                          sep = "/") %>%
+  read_delim(delim=";",
+             skip = 2) %>%
+  clean_names() %>%
+  pivot_longer(cols = starts_with("poverty_incidence_among_population_estimate_percent"),
+               names_to = c("year"),
+               names_pattern = "poverty_incidence_among_population_estimate_percent_(.*)",
+               values_to = "incidence_popn") %>%
+  rename(major_island_group = region_province) %>%
+  mutate(year = as.numeric(year),
+         major_island_group = ifelse(str_detect(major_island_group, "NCR"), "NCR", NA))
+  
+
+# note, these are computed differently from the 2015-2018 values
+df_pov_06_12 <- paste(dataraw,
+                      "3D3DP13B.csv",
+                      sep = "/") %>%
+  read_delim(delim=";",
+             skip = 2) %>%
+  clean_names() %>%
+  pivot_longer(cols = starts_with("poverty_incidence_among_families_percent"),
+               names_to = c("year"),
+               names_pattern = "poverty_incidence_among_families_percent_(.*)",
+               values_to = "incidence_popn") %>%
+  mutate(year = as.numeric(year))
+
+##### 2015-2021 poverty incidence values
+df_pov_15_21 <- paste(dataraw,
                    "1E3DF130.csv",
                    sep = "/") %>%
   read_delim(delim=";",
@@ -301,14 +302,15 @@ df_pov_f2 <- paste(dataraw,
   rename(incidence_families = poverty_incidence_among_families_percent,
          incidence_popn = poverty_incidence_among_population_percent) %>%
   mutate(major_island_group = str_replace(major_island_group, "\\*", ""),
-         year = as.numeric(str_replace(year, "p", ""))) %>%
-  filter(major_island_group != "Luzon") %>% # rename Rest of Luzon as Luzon
-  mutate(major_island_group = case_when(
-    major_island_group == "Rest of Luzon" ~ "Luzon",
-    major_island_group == "PHILIPPINES" ~ str_to_title(major_island_group),
-    T ~ major_island_group 
-  ))
+         year = as.numeric(str_replace(year, "p", ""))) 
 
+# combine both data sets
+df_pov_12_21 <- bind_rows(df_pov_06_12, df_pov_15_21,df_pov_ncr_06_12) %>%
+  arrange(major_island_group, year) %>%
+  filter(major_island_group %notin% c("Rest of Luzon")) %>%
+  select(-incidence_families)
+
+rm(df_pov_06_12, df_pov_15_21, df_pov_ncr_06_12)
 
 ##### plot 2 - map and line chart #####
 # define colours
@@ -326,53 +328,51 @@ f2pa <- ggplot(data = df_island_group) +
           linewidth = 0.1) +
   scale_fill_manual(values = highlights) +
   coord_sf(datum = NA,
-           xlim = c(-200000, 1000000),
-           ylim = c(600000, 2300000),
+           xlim = c(-170411.7, 898219.8),
+           ylim = c(507973.4 , 2330281),
            expand = F) + # adjust size of plot?
   theme(legend.position = "none",
         plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")) +
   annotate(geom = "text", 
-           x = c(200000, 280000, 600000, 60000), 
-           y = c(800000, 1100000, 1800000, 1570000), 
+           x = c(120000, 250000, 600000, 60000), 
+           y = c(800000, 1050000, 1800000, 1570000), 
            label = c("Mindanao", "Visayas", "Luzon", "NCR"),
            colour = c("#CC79A7", "#009E73", "#56B4E9","#E69F00"),
            family = "Noto Sans",
            fontface = "bold",
-           size = 6/.pt)
-
+           size = 8/.pt)
 
 # highlights for line plot
 highlights_line <- c("Luzon"="#56B4E9",
                      "NCR" = "#E69F00",
                      "Visayas" = "#009E73",
                      "Mindanao" = "#CC79A7",
-                     "Philippines" = "#999999")
+                     "PHILIPPINES" = "#0072B2")
 
 # line plot - overtime, major island groups, geography
-f2pb <- ggplot(data = df_pov_f2,
+f2pb <- ggplot(data = df_pov_12_21,
                aes(x = year, 
                    y = incidence_popn,
                    color = major_island_group, 
                    group = major_island_group)) +
   th +
   geom_line(linewidth = 1) +
-  #geom_point(size = 1) +
   coord_cartesian(clip = "off") +
   scale_color_manual(values = highlights_line) +
   scale_x_continuous(position = "bottom", 
-                     breaks = c(2015, 2018, 2021),
-                     limits = c(2015, 2021.5),
+                     breaks = c(2006, 2009, 2012, 2015, 2018, 2021),
+                     limits = c(2006, 2022),
                      expand = c(0,.01)) +
   scale_y_continuous(position = "right",
                      breaks = c(0, 10, 20, 30, 40),
-                     limits = c(0, 40),
-                     expand = c(.05, 0)) +
+                     limits = c(0, 45),
+                     expand = c(0, 0)) +
   theme(legend.position = "none") +
   annotate(geom = "text",
-           x = c(2015.8),
-           y = c(19),
+           x = c(2009),
+           y = c(24),
            label = c("Philippines"),
-           colour = c("#999999"),
+           colour = c("#0072B2"),
            family = "Noto Sans",
            fontface = "bold",
            size = 8/.pt) +
@@ -407,9 +407,10 @@ f2pb <- ggplot(data = df_pov_f2,
 f2 <- f2pa + f2pb +
   plot_annotation(
     title = "Philippines",
-    subtitle = "Poverty rate by major island group*, 2015-2021 %",
-    caption = "NCR = National Capital Region. Luzon values exclude the NCR. *Based on national poverty rates. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
-    theme = th)
+    subtitle = "Poverty rate by major island group*, 2006-2021 %",
+    caption = "*Based on national poverty rates. NCR = National Capital Region. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan",
+    theme = th) +
+  plot_layout(ncol = 2, widths = c(1, 1.5))
 
 # write out plot
 f2
@@ -514,7 +515,7 @@ f3 <- ggplot(data = df_urb_rur) +
                      expand = c(0,0),
                      limits = c(0, 45),
                      breaks = seq(0, 40, 10)) +
-  geom_vline(aes(xintercept = 11.6),
+  geom_vline(aes(xintercept = 11.6), 
              linetype = "dashed",
              colour = "#0072B2") +
   geom_vline(aes(xintercept = 25.7),
@@ -558,73 +559,4 @@ f3 <- ggplot(data = df_urb_rur) +
 f3
 
 #gg_stop_recording()
-
-
-
-
-# read poverty incidence (%) and subsistence incidence files
-# define island groups
-luzon <- c("Region I (Ilocos Region)", "Region II (Cagayan Valley)",
-           "Region III (Central Luzon)", "Region IV-A (CALABARZON)",
-           "MIMAROPA Region", "Cordillera Administrative Region (CAR)",
-           "Region V (Bicol Region)")
-visayas <- c("Region VI (Western Visayas)", "Region VII (Central Visayas)", "Region VIII (Eastern Visayas)")
-mindanao <- c("Region IX (Zamboanga Peninsula)", "Region X (Northern Mindanao)",
-              "Region XI (Davao Region)", "Region XII (SOCCSKSARGEN)",
-              "Region XIII (Caraga)", 
-              "Autonomous Region in Muslim Mindana Bangsamoro Autonomous Region in Muslim Mindanao (ARMM/BARMM)",
-              "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)")
-
-# poverty incidence (rate) data
-df_test <- paste(dataraw,
-                "2B5CPCP1.csv",
-                sep = "/") %>%
-  read_delim(delim=";",
-             skip = 2) %>%
-  clean_names() %>%
-  rename(gdp_pc = at_constant_2018_prices_2021,
-         geolocation = region) %>%
-  mutate(year = 2021,
-         geolocation = str_replace_all(geolocation, c("[a-z]\\/" = "" ,"[0-9]\\/" = "" ,"[\\.\\,]" = "")),
-         island_group = case_when(
-           geolocation == "National Capital Region (NCR)" ~ "NCR",
-           geolocation %in% luzon ~ "Luzon",
-           geolocation %in% visayas ~ "Visayas",
-           geolocation %in% mindanao ~ "Mindanao",
-           geolocation == "Philippines" ~ "Philippines"),
-         geolocation = str_replace_all(geolocation, "\\([^)]*\\)", "") %>% str_trim(side = "both"),
-         geolocation = case_when(
-          geolocation == "National Capital Region" ~ "NCR",
-          geolocation == "Cordillera Administrative Region" ~ "CAR",
-          geolocation == "Region XIII" ~ "CARAGA",
-          geolocation == "MIMAROPA Region" ~ str_replace(geolocation, " Region", ""),
-          geolocation == "Bangsamoro Autonomous Region in Muslim Mindanao" ~ "BARMM",
-          T ~ geolocation),
-         gdp_pc_scale = gdp_pc/10000)
-
-dfur <- df_urb_rur %>%
-  select(geolocation, urban_pov_2021, rural_pov_2021) %>%
-  pivot_longer(cols = contains("2021"),
-               names_to = c("type", "year"),
-               names_pattern = "(.*)_pov_(.*)",
-               values_to = "value") %>%
-  mutate(year = as.numeric(year)) %>%
-  left_join(df_test)
-
-ftest <- ggplot(data = dfur %>%
-                  filter(geolocation != "NCR")) +
-  th +
-  geom_point(aes(x = value,
-                 y = gdp_pc_scale,
-                 colour = type,
-                 shape = island_group), 
-             alpha = 1,
-             size = 2) +
-  scale_x_continuous(position = "bottom",
-                     expand = c(0,0),
-                     limits = c(0, 40),
-                     breaks = seq(0, 40, 10))
-
-ftest
-
 ### end of code ###
