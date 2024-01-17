@@ -29,23 +29,19 @@ From 2015 to 2018, all major island groups recorded decreases in poverty rates. 
 or why mindanao has decreased over time  -->
 
 <!-- urban/rural poverty -->
-Most regions in Luzon and the NCR, the Philippines' economic centre, record lower urban and rural poverty rates compared to other regions elsewhere in the country (see chart 2). 
+1. Poverty is quite rural: rural rates exceed urban in 15/17 regions
+2. Long term improvements to minimize urban poverty are required. Only 4/17 regions fall below the national average.
+3. Poverty rates in more agriculture, forestry-related regional economies are higher 
+4. The difference in urban/rural in Visayas and Mindanao are relatively large compared to those in Luzon
 
-The urban-rural poverty divide is stark: in 15 out of 17 regions, rural poverty rates are higher than urban rates. All regions in Visayas and Mindanao, with predominantly agriculture and fishing based economies, record urban poverty rates above the national value. 
+Three patterns show the stark nature of the urban-rural poverty divide in the Philippines. First, rural poverty is higher than urban poverty in 15 out of 16 regions (the NCR has no rural areas). Regions in Mindanao, which are predominantly agriculture and fishing-based economies, record some of the largest rural poverty rates in the country that exceed the national value. 
 
+Second, the majority of urban poverty rates exceeds the national value, including all regions in Visayas and Mindanao. Regions in these two island groups are 
 
-
-Urban poverty is still 
-Geographic differences in urban poverty . 
-
-Even if there are greater opportunities in cities and towns, all urban poverty rates in regions in Visayas and Mindanao exceed the national value.  These values suggest that more work must be done to shrink the urban-rural poverty gap. 
-
+Finally, the differences in urban and rural poverty in regions of Visayas and Mindanao are relatively large compared to those in Luzon. The difference in urban and rural poverty rates in 7 out of the 9 total regions in Visayas and Mindanao are higher than Luzon's largest difference (Region V has a 10 percentage point difference). Region IX in Mindanao has the largest difference in urban and rural poverty rates in the country (27 percentage points). 
 
 <!-- need to conclude on poverty programs and where to go -->
 
-[next plot to make?]
-[why is Mindanao's poverty rate high relative to the other regions?]
-[is it urban/rural differences?]
 
 
 

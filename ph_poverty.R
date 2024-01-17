@@ -559,4 +559,71 @@ f3
 #gg_stop_recording()
 
 
+
+
+# read poverty incidence (%) and subsistence incidence files
+# define island groups
+luzon <- c("Region I (Ilocos Region)", "Region II (Cagayan Valley)",
+           "Region III (Central Luzon)", "Region IV-A (CALABARZON)",
+           "MIMAROPA Region", "Cordillera Administrative Region (CAR)",
+           "Region V (Bicol Region)")
+visayas <- c("Region VI (Western Visayas)", "Region VII (Central Visayas)", "Region VIII (Eastern Visayas)")
+mindanao <- c("Region IX (Zamboanga Peninsula)", "Region X (Northern Mindanao)",
+              "Region XI (Davao Region)", "Region XII (SOCCSKSARGEN)",
+              "Region XIII (Caraga)", 
+              "Autonomous Region in Muslim Mindana Bangsamoro Autonomous Region in Muslim Mindanao (ARMM/BARMM)",
+              "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)")
+
+# poverty incidence (rate) data
+df_test <- paste(dataraw,
+                "2B5CPCP1.csv",
+                sep = "/") %>%
+  read_delim(delim=";",
+             skip = 2) %>%
+  clean_names() %>%
+  rename(gdp_pc = at_constant_2018_prices_2021,
+         geolocation = region) %>%
+  mutate(year = 2021,
+         geolocation = str_replace_all(geolocation, c("[a-z]\\/" = "" ,"[0-9]\\/" = "" ,"[\\.\\,]" = "")),
+         island_group = case_when(
+           geolocation == "National Capital Region (NCR)" ~ "NCR",
+           geolocation %in% luzon ~ "Luzon",
+           geolocation %in% visayas ~ "Visayas",
+           geolocation %in% mindanao ~ "Mindanao",
+           geolocation == "Philippines" ~ "Philippines"),
+         geolocation = str_replace_all(geolocation, "\\([^)]*\\)", "") %>% str_trim(side = "both"),
+         geolocation = case_when(
+          geolocation == "National Capital Region" ~ "NCR",
+          geolocation == "Cordillera Administrative Region" ~ "CAR",
+          geolocation == "Region XIII" ~ "CARAGA",
+          geolocation == "MIMAROPA Region" ~ str_replace(geolocation, " Region", ""),
+          geolocation == "Bangsamoro Autonomous Region in Muslim Mindanao" ~ "BARMM",
+          T ~ geolocation),
+         gdp_pc_scale = gdp_pc/10000)
+
+dfur <- df_urb_rur %>%
+  select(geolocation, urban_pov_2021, rural_pov_2021) %>%
+  pivot_longer(cols = contains("2021"),
+               names_to = c("type", "year"),
+               names_pattern = "(.*)_pov_(.*)",
+               values_to = "value") %>%
+  mutate(year = as.numeric(year)) %>%
+  left_join(df_test)
+
+ftest <- ggplot(data = dfur %>%
+                  filter(geolocation != "NCR")) +
+  th +
+  geom_point(aes(x = value,
+                 y = gdp_pc_scale,
+                 colour = type,
+                 shape = island_group), 
+             alpha = 1,
+             size = 2) +
+  scale_x_continuous(position = "bottom",
+                     expand = c(0,0),
+                     limits = c(0, 40),
+                     breaks = seq(0, 40, 10))
+
+ftest
+
 ### end of code ###
