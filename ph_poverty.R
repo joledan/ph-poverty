@@ -479,7 +479,8 @@ df_urb_rur <- df_urban %>%
     geolocation == "Philippines" ~ "Philippines",
     geolocation == "NCR" ~ "Luzon"),
   geolocation = fct_relevel(geolocation, rev(region_factored)),
-  island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon"))))
+  island_group = fct_relevel(island_group, rev(c("Mindanao", "Visayas", "Luzon"))),
+  diff_2021 = rural_pov_2021-urban_pov_2021)
 
 # make small df for annotations
 df_annos <- data.frame(island_group = c("Luzon", "Visayas", "Mindanao"), 
