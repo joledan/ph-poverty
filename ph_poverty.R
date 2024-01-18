@@ -553,7 +553,7 @@ f3 <- ggplot(data = df_urb_rur) +
         strip.placement = "outside") +
   labs(title = "On the wrong side",
        subtitle = "Regional poverty rate in <span style='color: #0072B2'><b>urban</b></span> and <span style='color:#D55E00'><b>rural</b></span> areas, 2021 %",
-       caption = "NCR has no rural areas. \\* indicates averages for the whole country. Poverty rates in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
+       caption = "NCR has no rural areas. \\* indicates national value. Poverty rates in percentage points. <br> **Source:** Philippine Statistics Authority • **Visual:** Jan Oledan") +
   theme(panel.spacing = unit(0,'pt'),
         plot.subtitle = element_markdown(),
         plot.caption = element_markdown(),
