@@ -1,14 +1,14 @@
 ---
 layout: post
 title: Poverty in the Philippines
-thumbnail: ""
+thumbnail: "/assets/images/ph-pov/ph-pov-fig1.png"
 ---
 
 **[code](https://github.com/joledan/ph-poverty) and tools:** R, ggplot2
 
 <!--more-->
 
-<!--![fig1]({{site.url}}/assets/images/wiki-nc/wiki-nc-fig1.png)-->
+![fig1]({{site.url}}/assets/images/ph-pov/ph-pov-fig1.png)
 
 [intro and comparison to SEA neighbours]
 [brief history of poverty reduction efforts]
@@ -20,6 +20,8 @@ The Philippines, a populous island nation in Southeast Asia, has ambitious goals
 
 <!-- poverty rate by major island group -->
 The Philippines is split into three major island groups from north to south: Luzon, Visayas, and Mindanao. The National Capital Region (NCR) contains the capital Manila and 16 other cities and municipalities. The national poverty rate is defined as the share of poor Filipinos whose income per person is insufficient to meet their basic needs. From 2006 to 2021 (the most recent year of data) the Philippines' national poverty rate dropped from 26.5% to 18.1% (see chart 2), still above the country's current [target](https://psa.gov.ph/statistics/statdev/press-release) between 15.5 to 17.5%. This was accomplished through various social welfare policies in the form of [cash transfer programs](https://www.officialgazette.gov.ph/programs/conditional-cash-transfer/), community driven development, and improvements to livelihood and [employment opportunities]((https://www.lumina.com.ph/news-and-blogs/blogs/social-welfare-programs-in-the-philippines/)) for the most vulnerable populations.  
+
+![fig1]({{site.url}}/assets/images/ph-pov/ph-pov-fig2.png)
 
 Poverty rate by major island group follows the reverse pattern from top to bottom: Mindanao records the largest values, followed by Visayas, Luzon, and the NCR (see chart 2). The national poverty rate cuts through the middle leaving the order unchanged over time. In the past two decades all major Philippine island groups decreased poverty rates. From 2006 to 2012 progress appeared flat then decreased steadily in the latter half of the 2010s going into 2018. The impact of the 2020 COVID-19 pandemic reverted some progress - though importantly not all - and resulted in increased poverty rates in the country as a whole and in Luzon, Visayas, and the NCR, from 2018 to 2021. Mindanao is the only island group that saw a constant decrease in poverty over the three years of data. However, it still records the highest poverty rate among the major island groups in the country.
 
@@ -35,6 +37,8 @@ or why mindanao has decreased over time  -->
  
 The Philippine case suggests poverty is split along geographic and economic lines. Visayas and Mindanao, with predominantly agriculture and fishing-based economies, record higher poverty rates compared to Luzon and the NCR, the economic centre of the country. Three patterns reveal the stark nature of the urban-rural poverty divide across regions in the Philippines (see chart 3). First, rural poverty is higher than urban poverty in 15 out of 16 regions (the NCR has no rural areas). Regions in Mindanao record some of the largest rural poverty rates in the country which exceed the national value. Second, the majority of urban poverty rates are higher than the national value, including all regions in Visayas and Mindanao. Finally, the differences in urban and rural poverty in regions of Visayas and Mindanao are relatively large compared to those in Luzon. The difference in urban and rural poverty rates in 7 out of the 9 total regions in Visayas and Mindanao are higher than Luzon's largest difference (Region V has a 10 percentage point difference). Region IX in Mindanao has the largest difference in urban and rural poverty rates in the country (27 percentage points). 
 
+![fig3]({{site.url}}/assets/images/ph-pov/ph-pov-fig3.png)
+
 <!-- need to conclude on poverty programs and where to go -->
 Disparities in urban and rural poverty suggest a potential starting point for policy makers. The Philippine Development Plan 2023-2028 outlines the Marcos administration's goals to reduce poverty through economic growth. Importantly it recognizes the multidimensional nature of poverty and the need to approach it from all angles. Better health outcomes for all could lead to more productive workers regardless of geography. Modernizing agriculture and land use practices could decrease rural poverty. Improving road and transport links between urban and rural areas allows for better market access and economic opportunities. Addressing environmental concerns, from improving pollution and air quality in urban areas to building resilient infrastructure in more disaster-prone areas, provides some relief to the most vulnerable. The administration's poverty alleviation agenda is rigorous and ambitious. Better to cover all bases rather than too few.
 
@@ -44,4 +48,6 @@ Disparities in urban and rural poverty suggest a potential starting point for po
 -----
 
 ## Reflections
+
+
 
