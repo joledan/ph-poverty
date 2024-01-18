@@ -34,8 +34,9 @@ library(ggsflabel)
 extrafont::loadfonts("win")
 
 ##### set up directories ######
-main <- case_when(Sys.getenv("USERNAME") == "jgole" ~ "C:/Users/jgole/Dropbox/Portfolio",
-                  Sys.getenv("USER") == "janoledan" ~ "/Users/janoledan/Dropbox/Portfolio")
+main <- <DIRECTORY TO LOCAL FOLDER>
+
+
 dataout <- paste(main, "ph-quick/dataout", sep = "/")
 dataraw <- paste(main, "ph-quick/dataraw", sep = "/")
 plots <- paste(main, "ph-quick/plots", sep = "/")
