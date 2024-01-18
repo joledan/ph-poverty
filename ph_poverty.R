@@ -53,7 +53,7 @@ th <- theme_minimal(base_family = "Noto Sans") +
         plot.title = element_text(face = "bold", # plot title, subtitle, caption
                                   size = 12,
                                   margin = margin(t=0, r=0, b=2, l=0, "pt")),
-        plot.subtitle = element_text(size = 10,
+        plot.subtitle = element_text(size = 8,
                                      margin = margin(t=0,r=0,b=5,l=0, "pt")),
         plot.caption = element_markdown(hjust = 0,
                                         size = 6,
@@ -93,46 +93,55 @@ camcorder::gg_record(
 )
 
 ##### plot 1 - comparing national poverty rates #####
-df_wb_pov <- wb_data("SI.POV.NAHC",
-                     country = c("Philippines", "Thailand", "Indonesia", "Vietnam"),
+df_wb_pov <- wb_data("SI.POV.DDAY",
+                     country = c("Philippines", "China", "Indonesia", "Vietnam"),
                      start_date = 2012, end_date = 2021) %>%
   clean_names() %>%
-  filter(!is.na(si_pov_nahc))
+  filter(!is.na(si_pov_dday)) %>%
+  mutate(date = case_when(
+    country == "Viet Nam" & date == 2014 ~ 2015,
+    country == "Viet Nam" & date == 2020 ~ 2021,
+    country == "China" & date == 2020 ~ 2021,
+    T ~ date
+  )) %>%
+  filter(date %in% seq(2012, 2021, 3))
+
+# vietnam 2014 = 2015, 2020 = 2021
 
 country_highlights <- c("Indonesia"="#56B4E9",
                         "Philippines" = "#0072B2",
                         "Viet Nam" = "#D55E00",
-                        "Thailand" = "#E69F00")
+                        "China" = "#E69F00")
 
 # line plot - overtime, major island groups, geography
 f1 <- ggplot(data = df_wb_pov,
                 aes(x = date, 
-                    y = si_pov_nahc,
+                    y = si_pov_dday,
                     color = country)) +
   th +
   geom_line(linewidth = 1) +
   scale_color_manual(values = country_highlights) +
   scale_x_continuous(position = "bottom",
-                     breaks = c(2012, 2015, 2018, 2021),
+                     breaks = seq(2012, 2021, 3),
                      limits = c(2012, 2021.5),
                      expand = c(.05,0)) +
   scale_y_continuous(position = "right",
-                     breaks = c(0, 10, 20, 30),
-                     limits = c(0, 30),
+                     breaks = seq(0, 20, 5),
+                     limits = c(0, 15),
                      expand = c(0, 0)) +
   theme(legend.position = "none") +
   annotate(geom = "text", 
-           x = c(2014, 2013, 2019, 2013), 
-           y = c(13, 26, 4, 7), 
-           label = c("Indonesia", "Philippines", "Vietnam", "Thailand"),
+           x = c(2014, 2013.5, 2019, 2013), 
+           y = c(11, 5.5, 1.5, 3), 
+           label = c("Indonesia", "Philippines", "Vietnam", "China"),
            hjust = 0,
            colour = c("#56B4E9", "#0072B2", "#D55E00","#E69F00"),
            family = "Noto Sans",
            fontface = "bold",
            size = 8/.pt) +
-  labs(title = "Slow progress",
-       subtitle = "Population living in poverty*, 2012-2021 %",
-       caption = "*Based on national poverty rates <br> **Source:** World Bank • **Visual:** Jan Oledan")
+  labs(title = "Almost there",
+       subtitle = "Population living in extreme poverty*, 2012-2021 %",
+       caption = "*Below $2.15 a day (2017 PPP) <br> **Source:** World Bank • **Visual:** Jan Oledan")
 
 f1
 
@@ -305,7 +314,7 @@ df_pov_15_21 <- paste(dataraw,
          year = as.numeric(str_replace(year, "p", ""))) 
 
 # combine both data sets
-df_pov_12_21 <- bind_rows(df_pov_06_12, df_pov_15_21,df_pov_ncr_06_12) %>%
+df_pov_06_21 <- bind_rows(df_pov_06_12, df_pov_15_21,df_pov_ncr_06_12) %>%
   arrange(major_island_group, year) %>%
   filter(major_island_group %notin% c("Rest of Luzon")) %>%
   select(-incidence_families)
