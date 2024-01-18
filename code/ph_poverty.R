@@ -34,13 +34,12 @@ library(ggsflabel)
 extrafont::loadfonts("win")
 
 ##### set up directories ######
-main <- <DIRECTORY TO LOCAL FOLDER>
+main <- "DIRECTORY"
 
-
-dataout <- paste(main, "ph-quick/dataout", sep = "/")
-dataraw <- paste(main, "ph-quick/dataraw", sep = "/")
-plots <- paste(main, "ph-quick/plots", sep = "/")
-code <- paste(main, "ph-quick/code", sep = "/")
+dataout <- paste(main, "dataout", sep = "/")
+dataraw <- paste(main, "dataraw", sep = "/")
+plots <- paste(main, "plots", sep = "/")
+code <- paste(main, "code", sep = "/")
 
 # define %notin%
 `%notin%` <- Negate(`%in%`)
